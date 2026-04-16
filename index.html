@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Para Você ♡</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --purple: #7c5cbf;
+      --pink:   #e05fa0;
+      --rose:   #f5576c;
+      --lilac:  #c9b8f0;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Georgia', serif;
+      background: #1a0a2e;
+    }
+
+    /* ── HEARTS BG ── */
+    #hearts-bg {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .hbg {
+      position: absolute;
+      bottom: -60px;
+      font-size: 1.4rem;
+      animation: rise linear infinite;
+      opacity: .55;
+    }
+    @keyframes rise {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: .55; }
+      100% { transform: translateY(-110vh) rotate(360deg) scale(.4); opacity: 0; }
+    }
+
+    /* ── SCENE SYSTEM ── */
+    .scene {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem 1.5rem;
+      z-index: 1;
+      transition: opacity .7s ease, transform .7s cubic-bezier(.4,0,.2,1);
+    }
+    .scene           { opacity: 0; transform: translateX(100%); pointer-events: none; }
+    .scene.active    { opacity: 1; transform: translateX(0);    pointer-events: all; }
+    .scene.out-left  { opacity: 0; transform: translateX(-110%); pointer-events: none; }
+    .scene.out-right { opacity: 0; transform: translateX(110%); pointer-events: none; }
+
+    /* ── BACKGROUNDS ── */
+    #s1 { background: linear-gradient(145deg,#3d1f7a 0%,#6b3fa0 60%,#9b5fc0 100%); }
+    #s2 { background: linear-gradient(145deg,#1a0030 0%,#3b1060 100%); }
+    #s3 { background: linear-gradient(145deg,#0d1b4b 0%,#1a3a70 60%,#2a5298 100%); }
+    #s4 { background: linear-gradient(145deg,#1a0533 0%,#4b1a6e 60%,#7b3fa0 100%); }
+    #s5 { background: linear-gradient(145deg,#3a0060 0%,#7c1fa0 60%,#b03090 100%); }
+    #s6 { background: linear-gradient(145deg,#600030 0%,#b0005a 60%,#e0508a 100%); }
+
+    /* ── TYPOGRAPHY ── */
+    .ttl {
+      font-size: clamp(1.35rem,5.5vw,2rem);
+      color: #fff;
+      text-align: center;
+      line-height: 1.55;
+      text-shadow: 0 2px 14px rgba(0,0,0,.4);
+    }
+    .sub {
+      font-size: clamp(.9rem,3vw,1.1rem);
+      color: rgba(255,255,255,.75);
+      text-align: center;
+      margin-top: .8rem;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 15px 40px;
+      border: none; border-radius: 50px;
+      font-size: 1.05rem; font-weight: 700;
+      cursor: pointer; transition: all .25s;
+      letter-spacing: .3px;
+    }
+    .btn:active { transform: scale(.93); }
+
+    .btn-white {
+      background: #fff; color: #7c5cbf;
+      box-shadow: 0 8px 28px rgba(0,0,0,.28);
+      min-width: 210px; margin: 8px;
+    }
+    .btn-white:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,.35); }
+
+    .btn-ghost {
+      background: rgba(255,255,255,.15);
+      color: #fff; border: 2px solid rgba(255,255,255,.45);
+      min-width: 210px; margin: 8px;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.25); }
+
+    .btn-arrow {
+      width: 62px; height: 62px;
+      min-width: 0; padding: 0; border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      border: 2px solid rgba(255,255,255,.5);
+      color: #fff; font-size: 1.6rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .25s;
+      margin-top: 1.8rem;
+    }
+    .btn-arrow:hover { background: rgba(255,255,255,.35); transform: scale(1.08); }
+    .btn-arrow:active { transform: scale(.93); }
+
+    /* ── PROGRESS DOTS ── */
+    #dots {
+      position: fixed; bottom: 26px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 9px; z-index: 99;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.35);
+      transition: all .35s;
+    }
+    .dot.on { background: #fff; width: 26px; border-radius: 4px; }
+
+    /* ══════════════════════════════
+       SCENE 1 – PERGUNTA
+    ══════════════════════════════ */
+    #s1 .emoji-big {
+      font-size: 5rem;
+      animation: wobble 2.5s ease-in-out infinite;
+      margin-bottom: 1.4rem;
+      filter: drop-shadow(0 0 18px rgba(255,200,255,.6));
+    }
+    @keyframes wobble {
+      0%,100% { transform: rotate(-6deg) scale(1); }
+      50%      { transform: rotate(6deg)  scale(1.1); }
+    }
+    #nao-btn { position: relative; transition: top .2s, left .2s; }
+
+    /* ══════════════════════════════
+       SCENE 2 – CORAÇÃO BATENDO
+    ══════════════════════════════ */
+    .heart-wrap {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      width: 180px; height: 180px;
+      margin-bottom: 1.4rem;
+    }
+    .heart-ring {
+      position: absolute;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.18);
+      animation: expand 1.8s ease-out infinite;
+    }
+    .heart-ring:nth-child(2) { animation-delay: .6s; }
+    .heart-ring:nth-child(3) { animation-delay: 1.2s; }
+    @keyframes expand {
+      0%   { transform: scale(.6); opacity: .8; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    .heart-main {
+      font-size: 5.5rem;
+      animation: heartbeat 1.15s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(255,100,150,.7));
+      z-index: 1;
+    }
+    @keyframes heartbeat {
+      0%  { transform: scale(1); }
+      14% { transform: scale(1.18); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.12); }
+      70% { transform: scale(1); }
+    }
+    /* EKG line */
+    .ekg-wrap {
+      width: 260px; height: 60px;
+      margin: 1.2rem 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .ekg-wrap svg { width: 200%; height: 100%; animation: ekgScroll 2s linear infinite; }
+    @keyframes ekgScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ══════════════════════════════
+       SCENE 3 – FLIP CARDS
+    ══════════════════════════════ */
+    .cards-row {
+      display: flex; gap: 14px;
+      flex-wrap: wrap; justify-content: center;
+      margin: 1.2rem 0;
+    }
+    .fc {
+      width: 130px; height: 175px;
+      perspective: 900px; cursor: pointer;
+    }
+    .fci {
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .75s;
+      position: relative;
+    }
+    .fc.flipped .fci { transform: rotateY(180deg); }
+
+    .ff, .fb {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      border-radius: 18px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 1rem; text-align: center;
+    }
+    .ff {
+      background: rgba(255,255,255,.2);
+      border: 2px solid rgba(255,255,255,.4);
+    }
+    .ff em { font-size: 2.4rem; margin-bottom: .5rem; font-style: normal; }
+    .ff span { font-size: .78rem; color: rgba(255,255,255,.85); }
+
+    .fb {
+      background: #fff;
+      transform: rotateY(180deg);
+    }
+    .fb em { font-size: 1.8rem; margin-bottom: .4rem; font-style: normal; }
+    .fb p { font-size: .8rem; color: #555; line-height: 1.5; }
+
+    /* tap hint animation */
+    .tap-hint {
+      font-size: .78rem; color: rgba(255,255,255,.6);
+      margin-bottom: .5rem;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+
+    /* ══════════════════════════════
+       SCENE 4 – CÉU ESTRELADO
+    ══════════════════════════════ */
+    #stars-canvas {
+      position: absolute; inset: 0;
+      pointer-events: none;
+    }
+    .s4-content { z-index: 1; text-align: center; max-width: 320px; }
+
+    .moon-art {
+      position: relative;
+      width: 90px; height: 90px;
+      margin: 0 auto 1.4rem;
+    }
+    .moon-circle {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffe8a0, #f0c040);
+      box-shadow: 0 0 40px rgba(255,220,80,.5);
+    }
+    .moon-shade {
+      position: absolute;
+      top: 8px; left: 22px;
+      width: 62px; height: 62px;
+      border-radius: 50%;
+      background: rgba(100,50,120,.35);
+    }
+
+    /* ══════════════════════════════
+       SCENE 5 – MENSAGENS CHAT
+    ══════════════════════════════ */
+    .chat-box {
+      width: min(360px,94vw);
+      max-height: 58vh;
+      overflow-y: auto;
+      padding: 4px 4px 4px 4px;
+      scrollbar-width: none;
+    }
+    .chat-box::-webkit-scrollbar { display: none; }
+
+    .bubble {
+      max-width: 85%;
+      padding: 12px 18px;
+      border-radius: 22px 22px 22px 6px;
+      background: rgba(255,255,255,.92);
+      color: #333;
+      font-size: .93rem;
+      line-height: 1.55;
+      margin-bottom: 12px;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: bubbleIn .5s forwards;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    }
+    @keyframes bubbleIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .bubble-right {
+      border-radius: 22px 22px 6px 22px;
+      background: rgba(255,255,255,.25);
+      color: #fff;
+      margin-left: auto;
+    }
+
+    /* ══════════════════════════════
+       SCENE 6 – FINAL
+    ══════════════════════════════ */
+    #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+    .cp {
+      position: absolute;
+      top: -20px;
+      border-radius: 2px;
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    }
+
+    .final-word {
+      font-size: clamp(2.8rem,14vw,5.5rem);
+      font-weight: 900;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 4px 24px rgba(0,0,0,.35);
+      opacity: 0;
+      animation: pop .9s cubic-bezier(.175,.885,.32,1.275) forwards;
+    }
+    @keyframes pop {
+      0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .final-sub {
+      font-size: clamp(.95rem,3.5vw,1.25rem);
+      color: rgba(255,255,255,.85);
+      text-align: center;
+      margin-top: 1rem;
+      opacity: 0;
+      animation: pop .9s .35s cubic-bezier(.175,.885,.32,1.275) forwards;
+    }
+    .btn-restart {
+      opacity: 0;
+      animation: pop .9s .7s cubic-bezier(.175,.885,.32,1.275) forwards;
+    }
+
+    /* ── SWIPE AREA (mobile) ── */
+    .swipe-area { position: fixed; inset: 0; z-index: -1; }
+  </style>
+</head>
+<body>
+
+<!-- floating hearts -->
+<div id="hearts-bg"></div>
+
+<!-- progress dots (6 scenes) -->
+<div id="dots"></div>
+
+<!-- confetti layer -->
+<div id="confetti"></div>
+
+<!-- ════════════════════════════════
+     SCENE 1 · Pergunta
+════════════════════════════════ -->
+<div class="scene active" id="s1">
+  <div class="emoji-big">💭</div>
+  <h1 class="ttl">Você sabe o que é capaz de fazer com meu coração?</h1>
+  <p class="sub">Pensa bem antes de responder... 👀</p>
+  <div style="display:flex;flex-direction:column;align-items:center;margin-top:2rem;gap:4px">
+    <button class="btn btn-white" onclick="go(2,'right')">Sim, sei! 💕</button>
+    <button class="btn btn-ghost" id="nao-btn" onclick="runAway(event)" ontouchstart="runAway(event)">
+      Não, quero descobrir...
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCENE 2 · Coração batendo
+════════════════════════════════ -->
+<div class="scene" id="s2">
+  <div class="heart-wrap">
+    <div class="heart-ring"></div>
+    <div class="heart-ring"></div>
+    <div class="heart-ring"></div>
+    <div class="heart-main">❤️</div>
+  </div>
+
+  <!-- EKG -->
+  <div class="ekg-wrap">
+    <svg viewBox="0 0 400 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polyline stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round"
+        points="0,30 40,30 55,30 65,10 75,50 85,5 95,55 105,30 120,30
+                160,30 175,30 185,10 195,50 205,5 215,55 225,30 240,30
+                280,30 295,30 305,10 315,50 325,5 335,55 345,30 360,30 400,30"/>
+    </svg>
+  </div>
+
+  <h2 class="ttl">Você deixa meu coração bizarramente rápido...</h2>
+  <p class="sub">...de um jeito que eu nunca tinha sentido antes</p>
+  <button class="btn-arrow" onclick="go(3,'right')">→</button>
+</div>
+
+<!-- ════════════════════════════════
+     SCENE 3 · Cartões viráveis
+════════════════════════════════ -->
+<div class="scene" id="s3">
+  <h2 class="ttl">Você me faz sentir...</h2>
+  <p class="tap-hint">toque cada cartão ✦</p>
+  <div class="cards-row">
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fci">
+        <div class="ff"><em>🦋</em><span>Toque</span></div>
+        <div class="fb"><em>🦋</em><p>Borboletas no estômago toda vez que você aparece na tela</p></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fci">
+        <div class="ff"><em>🌙</em><span>Toque</span></div>
+        <div class="fb"><em>🌙</em><p>Em paz, como se você fosse meu lugar mais seguro do mundo</p></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fci">
+        <div class="ff"><em>✨</em><span>Toque</span></div>
+        <div class="fb"><em>✨</em><p>Que a vida fica absurdamente mais bonita com você do meu lado</p></div>
+      </div>
+    </div>
+
+  </div>
+  <button class="btn-arrow" onclick="go(4,'right')">→</button>
+</div>
+
+<!-- ════════════════════════════════
+     SCENE 4 · Céu estrelado
+════════════════════════════════ -->
+<div class="scene" id="s4">
+  <canvas id="stars-canvas"></canvas>
+  <div class="s4-content">
+    <div class="moon-art">
+      <div class="moon-circle"></div>
+      <div class="moon-shade"></div>
+    </div>
+    <h2 class="ttl">Mesmo à distância, eu olhava pro céu e pensava em você</h2>
+    <p class="sub">Cada estrela era um motivo a mais pra sorrir 🌟</p>
+    <button class="btn-arrow" onclick="go(5,'right')" style="margin:1.5rem auto 0">→</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     SCENE 5 · Mensagens
+════════════════════════════════ -->
+<div class="scene" id="s5">
+  <h2 class="ttl" style="margin-bottom:.8rem">Coisas que quero te dizer 💌</h2>
+  <div class="chat-box" id="chatBox"></div>
+  <button class="btn-arrow" onclick="go(6,'right')" id="chat-arrow" style="opacity:0;transition:opacity .5s">→</button>
+</div>
+
+<!-- ════════════════════════════════
+     SCENE 6 · Final
+════════════════════════════════ -->
+<div class="scene" id="s6">
+  <div class="final-word">TE AMO ❤️</div>
+  <p class="final-sub">Mal posso esperar pra te ver de verdade 🫂</p>
+  <p class="final-sub" style="font-size:clamp(.8rem,3vw,1rem);margin-top:.6rem;color:rgba(255,255,255,.7);animation-delay:.55s">
+    eu, você, gojinho, teddy, amora, rex, milk e nosso mofadinho 🐾
+  </p>
+  <button class="btn btn-white btn-restart" style="margin-top:2rem" onclick="go(1,'left')">
+    Recomeçar ♡
+  </button>
+</div>
+
+
+<script>
+/* ─────────────────────────────────
+   STATE
+───────────────────────────────── */
+let cur = 1;
+const N = 6;
+
+/* ─────────────────────────────────
+   DOTS
+───────────────────────────────── */
+(function initDots(){
+  const c = document.getElementById('dots');
+  for(let i=1;i<=N;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===1?' on':'');
+    d.id='d'+i; c.appendChild(d);
+  }
+})();
+
+function setDot(i){
+  document.querySelectorAll('.dot').forEach(d=>d.classList.remove('on'));
+  document.getElementById('d'+i).classList.add('on');
+}
+
+/* ─────────────────────────────────
+   NAVIGATION
+───────────────────────────────── */
+function go(to, dir){
+  if(to<1||to>N) return;
+  const fromEl = document.getElementById('s'+cur);
+  const toEl   = document.getElementById('s'+to);
+
+  fromEl.classList.remove('active');
+  fromEl.classList.add(dir==='right' ? 'out-left' : 'out-right');
+
+  toEl.classList.add('active');
+  setDot(to);
+  cur = to;
+
+  setTimeout(()=>fromEl.classList.remove('out-left','out-right'), 800);
+
+  // scene-specific init
+  if(to===4) initStars();
+  if(to===5) initChat();
+  if(to===6) boom();
+}
+
+/* ─────────────────────────────────
+   SCENE 1 – NÃO BUTTON RUN AWAY
+───────────────────────────────── */
+let runCount = 0;
+function runAway(e){
+  e.preventDefault();
+  runCount++;
+  const btn = document.getElementById('nao-btn');
+  const wrap = btn.parentElement;
+  const maxX = wrap.offsetWidth - btn.offsetWidth - 16;
+  const maxY = 120;
+  const rx = (Math.random() * maxX * 2 - maxX) * .5;
+  const ry = (Math.random() * maxY * 2 - maxY) * .35;
+  btn.style.position = 'relative';
+  btn.style.left = (parseFloat(btn.style.left||0)+rx)+'px';
+  btn.style.top  = (parseFloat(btn.style.top||0)+ry)+'px';
+  if(runCount >= 3){
+    btn.textContent = '...tá bom, vem ver 🫣';
+    btn.onclick = ()=>go(2,'right');
+    btn.ontouchstart = ()=>go(2,'right');
+  }
+}
+
+/* ─────────────────────────────────
+   FLOATING HEARTS
+───────────────────────────────── */
+(function spawnHearts(){
+  const c = document.getElementById('hearts-bg');
+  const h = ['❤️','💕','💗','💓','💞','🩷','💖'];
+  setInterval(()=>{
+    const el = document.createElement('span');
+    el.className='hbg';
+    el.textContent = h[Math.random()*h.length|0];
+    el.style.cssText=`
+      left:${Math.random()*100}vw;
+      font-size:${.7+Math.random()*1.3}rem;
+      animation-duration:${7+Math.random()*9}s;
+      animation-delay:0s;
+    `;
+    c.appendChild(el);
+    setTimeout(()=>el.remove(), 16000);
+  }, 900);
+})();
+
+/* ─────────────────────────────────
+   SCENE 4 – STARS CANVAS
+───────────────────────────────── */
+function initStars(){
+  const canvas = document.getElementById('stars-canvas');
+  const W = canvas.width  = window.innerWidth;
+  const H = canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  const stars = Array.from({length:110},()=>({
+    x: Math.random()*W, y: Math.random()*H,
+    r: .4+Math.random()*2.2,
+    speed: 1+Math.random()*2.5,
+    phase: Math.random()*Math.PI*2
+  }));
+
+  // shooting stars
+  const shoots = [];
+  function addShoot(){
+    shoots.push({ x:Math.random()*W*.6, y:Math.random()*H*.4,
+      vx:3+Math.random()*4, vy:2+Math.random()*3, len:60+Math.random()*80,
+      life:1, decay:.025+Math.random()*.015 });
+  }
+  setInterval(addShoot,3200);
+
+  let frame=0;
+  function draw(){
+    if(!document.getElementById('s4').classList.contains('active')) return;
+    ctx.clearRect(0,0,W,H);
+    frame++;
+    // draw stars
+    stars.forEach(s=>{
+      const a=.3+.7*(.5+.5*Math.sin(s.phase+frame/60*s.speed));
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${a})`;
+      ctx.fill();
+    });
+    // shooting stars
+    for(let i=shoots.length-1;i>=0;i--){
+      const s=shoots[i];
+      const grad=ctx.createLinearGradient(s.x,s.y,s.x-s.vx*s.len/5,s.y-s.vy*s.len/5);
+      grad.addColorStop(0,`rgba(255,255,255,${s.life})`);
+      grad.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.moveTo(s.x,s.y);
+      ctx.lineTo(s.x-s.vx*s.len/5,s.y-s.vy*s.len/5);
+      ctx.strokeStyle=grad; ctx.lineWidth=2; ctx.stroke();
+      s.x+=s.vx; s.y+=s.vy; s.life-=s.decay;
+      if(s.life<=0) shoots.splice(i,1);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ─────────────────────────────────
+   SCENE 5 – CHAT MESSAGES
+───────────────────────────────── */
+const msgs = [
+  { t:'left',  txt:'Você é a melhor coisa que aconteceu pra mim nesses meses todos... 💕' },
+  { t:'right', txt:'Eu sei que não foi fácil, mas valeu cada segundo 🥺' },
+  { t:'left',  txt:'te amo iubita 🥰' },
+  { t:'left',  txt:'Cada mensagem sua fazia meu dia completamente melhor, sem exceção 🌸' },
+  { t:'right', txt:'Eu ficava esperando você aparecer pra ficar mais feliz ✨' },
+  { t:'left',  txt:'te amo meu pudimzinho 🍮' },
+  { t:'left',  txt:'Mal posso acreditar que finalmente vou te ver de verdade...' },
+  { t:'right', txt:'Meu coração tá acelerado só de pensar nisso 💗' },
+  { t:'left',  txt:'Obrigado por fazer cada dia mais bonito. Te amo. ❤️' },
+];
+
+function initChat(){
+  const box = document.getElementById('chatBox');
+  const arrow = document.getElementById('chat-arrow');
+  box.innerHTML='';
+  arrow.style.opacity='0';
+
+  msgs.forEach((m,i)=>{
+    setTimeout(()=>{
+      const b=document.createElement('div');
+      b.className='bubble'+(m.t==='right'?' bubble-right':'');
+      b.textContent=m.txt;
+      b.style.animationDelay='0s';
+      box.appendChild(b);
+      box.scrollTop=box.scrollHeight;
+      if(i===msgs.length-1){
+        setTimeout(()=>{ arrow.style.opacity='1'; },500);
+      }
+    }, i*650);
+  });
+}
+
+/* ─────────────────────────────────
+   SCENE 6 – CONFETTI BOOM
+───────────────────────────────── */
+function boom(){
+  const c = document.getElementById('confetti');
+  c.innerHTML='';
+  const cols=['#ff69b4','#ff1493','#ff6b9d','#fff','#ffb6c1','#ffd700','#c084fc','#f0abfc'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');
+    p.className='cp';
+    const sz=7+Math.random()*12;
+    p.style.cssText=`
+      left:${Math.random()*100}%;
+      width:${sz}px; height:${sz}px;
+      background:${cols[Math.random()*cols.length|0]};
+      border-radius:${Math.random()>.5?'50%':'3px'};
+      animation-duration:${2+Math.random()*2.5}s;
+      animation-delay:${Math.random()*1.2}s;
+    `;
+    c.appendChild(p);
+  }
+  setTimeout(()=>c.innerHTML='',5000);
+}
+
+/* ─────────────────────────────────
+   TOUCH SWIPE (optional)
+───────────────────────────────── */
+let tx=0;
+document.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; },{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  // only swipe left to advance on certain scenes
+  if(dx<-60 && [2,3,4].includes(cur)) go(cur+1,'right');
+},{passive:true});
+</script>
+</body>
+</html>
