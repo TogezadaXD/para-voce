@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Para Você ♡</title>
+  <title>Para você, Amanda ♡</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -342,6 +342,23 @@
       animation: pop .9s .7s cubic-bezier(.175,.885,.32,1.275) forwards;
     }
 
+    /* cycling phrases */
+    .phrase-cycle {
+      font-size: clamp(1.1rem,4.5vw,1.5rem);
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-top: .5rem;
+      min-height: 2rem;
+      opacity: 0;
+      animation: pop .9s .5s cubic-bezier(.175,.885,.32,1.275) forwards;
+      text-shadow: 0 2px 12px rgba(0,0,0,.3);
+    }
+    .phrase-fade-out { animation: fadeOut .4s forwards !important; }
+    .phrase-fade-in  { animation: fadeIn  .4s forwards !important; }
+    @keyframes fadeOut { to { opacity:0; transform:translateY(-8px); } }
+    @keyframes fadeIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
     /* ── SWIPE AREA (mobile) ── */
     .swipe-area { position: fixed; inset: 0; z-index: -1; }
   </style>
@@ -362,7 +379,9 @@
 ════════════════════════════════ -->
 <div class="scene active" id="s1">
   <div class="emoji-big">💭</div>
-  <h1 class="ttl">Você sabe o que é capaz de fazer com meu coração?</h1>
+  <p style="font-size:clamp(1rem,4vw,1.3rem);color:rgba(255,255,255,.6);margin-bottom:.4rem;letter-spacing:.5px">para você,</p>
+  <h1 class="ttl" style="font-size:clamp(2rem,9vw,3.2rem);margin-bottom:.6rem">Amanda 🩷</h1>
+  <p class="ttl" style="font-size:clamp(1.1rem,4.5vw,1.5rem)">Você sabe o que é capaz de fazer com meu coração?</p>
   <p class="sub">Pensa bem antes de responder... 👀</p>
   <div style="display:flex;flex-direction:column;align-items:center;margin-top:2rem;gap:4px">
     <button class="btn btn-white" onclick="go(2,'right')">Sim, sei! 💕</button>
@@ -441,7 +460,7 @@
       <div class="moon-circle"></div>
       <div class="moon-shade"></div>
     </div>
-    <h2 class="ttl">Mesmo à distância, eu olhava pro céu e pensava em você</h2>
+    <h2 class="ttl">Mesmo à distância, eu olhava pro céu e pensava em você, Amanda</h2>
     <p class="sub">Cada estrela era um motivo a mais pra sorrir 🌟</p>
     <button class="btn-arrow" onclick="go(5,'right')" style="margin:1.5rem auto 0">→</button>
   </div>
@@ -460,12 +479,13 @@
      SCENE 6 · Final
 ════════════════════════════════ -->
 <div class="scene" id="s6">
-  <div class="final-word">TE AMO ❤️</div>
-  <p class="final-sub">Mal posso esperar pra te ver de verdade 🫂</p>
-  <p class="final-sub" style="font-size:clamp(.8rem,3vw,1rem);margin-top:.6rem;color:rgba(255,255,255,.7);animation-delay:.55s">
+  <div class="final-word">TE AMO, AMANDA ❤️</div>
+  <div class="phrase-cycle" id="phraseCycle">te amo mil milhões</div>
+  <p class="final-sub" style="margin-top:.8rem">Mal posso esperar pra te ver de verdade 🫂</p>
+  <p class="final-sub" style="font-size:clamp(.78rem,2.8vw,.95rem);margin-top:.5rem;color:rgba(255,255,255,.65);animation-delay:.65s">
     eu, você, gojinho, teddy, amora, rex, milk e nosso mofadinho 🐾
   </p>
-  <button class="btn btn-white btn-restart" style="margin-top:2rem" onclick="go(1,'left')">
+  <button class="btn btn-white btn-restart" style="margin-top:1.8rem" onclick="go(1,'left')">
     Recomeçar ♡
   </button>
 </div>
@@ -514,8 +534,9 @@ function go(to, dir){
 
   // scene-specific init
   if(to===4) initStars();
-  if(to===5) initChat();
-  if(to===6) boom();
+  if(to===5) { initChat(); stopPhrases(); }
+  if(to===6) { boom(); startPhrases(); }
+  if(cur!==6 && to!==6) stopPhrases();
 }
 
 /* ─────────────────────────────────
@@ -622,7 +643,7 @@ function initStars(){
    SCENE 5 – CHAT MESSAGES
 ───────────────────────────────── */
 const msgs = [
-  { t:'left',  txt:'Você é a melhor coisa que aconteceu pra mim nesses meses todos... 💕' },
+  { t:'left',  txt:'Amanda, você é a melhor coisa que aconteceu pra mim nesses meses todos... 💕' },
   { t:'right', txt:'Eu sei que não foi fácil, mas valeu cada segundo 🥺' },
   { t:'left',  txt:'te amo iubita 🥰' },
   { t:'left',  txt:'Cada mensagem sua fazia meu dia completamente melhor, sem exceção 🌸' },
@@ -630,7 +651,8 @@ const msgs = [
   { t:'left',  txt:'te amo meu pudimzinho 🍮' },
   { t:'left',  txt:'Mal posso acreditar que finalmente vou te ver de verdade...' },
   { t:'right', txt:'Meu coração tá acelerado só de pensar nisso 💗' },
-  { t:'left',  txt:'Obrigado por fazer cada dia mais bonito. Te amo. ❤️' },
+  { t:'left',  txt:'te amo mil milhões, Amanda ❤️' },
+  { t:'left',  txt:'Obrigado por fazer cada dia mais bonito. ♡' },
 ];
 
 function initChat(){
@@ -652,6 +674,42 @@ function initChat(){
       }
     }, i*650);
   });
+}
+
+/* ─────────────────────────────────
+   SCENE 6 – CYCLING PHRASES
+───────────────────────────────── */
+const lovePhrases = [
+  'te amo mil milhões 💕',
+  'te amo iubita 🥰',
+  'te amo meu pudimzinho 🍮',
+  'te amo mais que tudo ✨',
+  'te amo demais, Amanda 💗',
+  'te amo até o infinito e além 🌙',
+];
+let phraseIdx = 0;
+let phraseTimer = null;
+
+function startPhrases(){
+  phraseIdx = 0;
+  const el = document.getElementById('phraseCycle');
+  el.textContent = lovePhrases[0];
+  el.className = 'phrase-cycle';
+
+  phraseTimer = setInterval(()=>{
+    el.classList.add('phrase-fade-out');
+    setTimeout(()=>{
+      phraseIdx = (phraseIdx + 1) % lovePhrases.length;
+      el.textContent = lovePhrases[phraseIdx];
+      el.classList.remove('phrase-fade-out');
+      el.classList.add('phrase-fade-in');
+      setTimeout(()=> el.classList.remove('phrase-fade-in'), 400);
+    }, 400);
+  }, 2200);
+}
+
+function stopPhrases(){
+  if(phraseTimer){ clearInterval(phraseTimer); phraseTimer = null; }
 }
 
 /* ─────────────────────────────────
