@@ -13,38 +13,40 @@ const storage = multer.diskStorage({
   destination: UPLOADS_DIR,
   filename: (req, file, cb) => {
     const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const name = `${Date.now()}-${safe}`;
-    cb(null, name);
+    cb(null, `${Date.now()}-${safe}`);
   },
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 * 1024 }, // 20 GB
-  fileFilter: (req, file, cb) => {
-    const allowed = /\.(mp4|mkv|webm|mov|avi)$/i;
-    cb(null, allowed.test(file.originalname));
-  },
+  limits: { fileSize: 20 * 1024 * 1024 * 1024 },
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Upload
-app.post('/upload', upload.single('video'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'Arquivo inválido ou muito grande' });
-  res.json({ filename: req.file.filename, originalname: req.file.originalname });
+// Upload — multer chamado como callback para capturar erros no Express 5
+app.post('/upload', (req, res) => {
+  upload.single('video')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo recebido' });
+    res.json({ filename: req.file.filename, originalname: req.file.originalname });
+  });
 });
 
 // Lista de vídeos
 app.get('/videos', (req, res) => {
-  const files = fs.readdirSync(UPLOADS_DIR)
-    .filter(f => /\.(mp4|mkv|webm|mov|avi)$/i.test(f))
-    .map(f => {
-      const stat = fs.statSync(path.join(UPLOADS_DIR, f));
-      return { filename: f, size: stat.size, date: stat.mtime };
-    })
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(files);
+  try {
+    const files = fs.readdirSync(UPLOADS_DIR)
+      .filter(f => /\.(mp4|mkv|webm|mov|avi|m4v)$/i.test(f))
+      .map(f => {
+        const stat = fs.statSync(path.join(UPLOADS_DIR, f));
+        return { filename: f, size: stat.size, date: stat.mtime };
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    res.json(files);
+  } catch (e) {
+    res.json([]);
+  }
 });
 
 // Delete vídeo
@@ -55,7 +57,7 @@ app.delete('/videos/:filename', (req, res) => {
   res.json({ ok: true });
 });
 
-// Streaming com byte-range (essencial para vídeos grandes)
+// Streaming com byte-range
 app.get('/stream/:filename', (req, res) => {
   const file = path.join(UPLOADS_DIR, path.basename(req.params.filename));
   if (!fs.existsSync(file)) return res.status(404).send('Não encontrado');
@@ -64,26 +66,25 @@ app.get('/stream/:filename', (req, res) => {
   const total = stat.size;
   const range = req.headers.range;
 
-  const ext = path.extname(file).toLowerCase();
   const mimeTypes = {
     '.mp4': 'video/mp4',
     '.mkv': 'video/x-matroska',
     '.webm': 'video/webm',
     '.mov': 'video/quicktime',
     '.avi': 'video/x-msvideo',
+    '.m4v': 'video/mp4',
   };
+  const ext = path.extname(file).toLowerCase();
   const contentType = mimeTypes[ext] || 'video/mp4';
 
   if (range) {
     const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
     const start = parseInt(startStr, 10);
     const end = endStr ? parseInt(endStr, 10) : Math.min(start + 10 * 1024 * 1024 - 1, total - 1);
-    const chunkSize = end - start + 1;
-
     res.writeHead(206, {
       'Content-Range': `bytes ${start}-${end}/${total}`,
       'Accept-Ranges': 'bytes',
-      'Content-Length': chunkSize,
+      'Content-Length': end - start + 1,
       'Content-Type': contentType,
     });
     fs.createReadStream(file, { start, end }).pipe(res);

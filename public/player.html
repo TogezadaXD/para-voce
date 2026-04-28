@@ -18,7 +18,6 @@
       flex-direction: column;
     }
 
-    /* Top bar */
     .top-bar {
       display: flex;
       align-items: center;
@@ -28,11 +27,7 @@
       border-bottom: 2px solid #c8963e;
       flex-shrink: 0;
     }
-    .logo-small {
-      width: 36px; height: 36px;
-      object-fit: contain;
-      opacity: 0.9;
-    }
+    .logo-small { width: 36px; height: 36px; object-fit: contain; }
     .back-btn {
       background: none;
       border: 1px solid #c8963e55;
@@ -43,7 +38,6 @@
       padding: 5px 12px;
       border-radius: 3px;
       letter-spacing: 0.1em;
-      transition: background 0.15s;
     }
     .back-btn:hover { background: #c8963e22; }
     .video-title {
@@ -56,7 +50,6 @@
       flex: 1;
     }
 
-    /* Filmstrip accent */
     .filmstrip-bar {
       height: 20px;
       background: #0d0d0d;
@@ -73,13 +66,12 @@
       margin: 0 5px;
     }
 
-    /* Player area */
     .player-wrap {
       flex: 1;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 20px 16px 40px;
+      padding: 24px 16px 48px;
     }
 
     .player-outer {
@@ -88,95 +80,51 @@
       border: 2px solid #c8963e55;
       border-radius: 4px;
       overflow: hidden;
-      box-shadow: 0 8px 60px #00000088, inset 0 0 0 1px #c8963e22;
-    }
-
-    /* Video container — position relative so controls overlay it */
-    .video-container {
-      position: relative;
-      width: 100%;
+      box-shadow: 0 8px 60px #00000088;
       background: #000;
-      line-height: 0; /* removes inline gap */
     }
 
+    /* Vídeo ocupa toda a largura, altura natural — SEM overlay em cima */
     video {
       width: 100%;
       display: block;
-      /* no aspect-ratio — let the video determine its own height */
-      min-height: 200px;
-      position: relative;
-      z-index: 1; /* video above bg, below overlays */
+      background: #000;
+      max-height: 70vh;
     }
 
-    /* Flash overlay (play/pause indicator) — sits above video */
-    .flash {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.35s;
-    }
-    .flash.show { opacity: 1; transition: none; }
-    .flash-icon {
-      width: 72px; height: 72px;
-      background: rgba(0,0,0,0.55);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-    }
-
-    /* Volume indicator */
-    .vol-toast {
-      position: absolute;
-      top: 14px; right: 16px;
-      z-index: 3;
-      background: rgba(13,10,5,0.85);
-      border: 1px solid #c8963e55;
-      border-radius: 3px;
-      padding: 5px 12px;
+    /* Aviso de codec */
+    .codec-warn {
+      display: none;
+      background: #3a1a0a;
+      border-top: 1px solid #c8963e55;
+      padding: 10px 18px;
       font-size: 0.82rem;
-      color: #c8963e;
-      letter-spacing: 0.08em;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
+      color: #f0a060;
+      letter-spacing: 0.03em;
     }
-    .vol-toast.show { opacity: 1; }
+    .codec-warn.show { display: block; }
 
-    /* Controls bar — overlays bottom of video */
+    /* Controles ficam ABAIXO do vídeo — sem interferir na renderização */
     .controls {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      z-index: 4;
-      background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
-      padding: 32px 16px 12px;
-      opacity: 0;
-      transition: opacity 0.25s;
+      background: #0d0d0d;
+      border-top: 2px solid #c8963e;
+      padding: 10px 16px 12px;
     }
-    .video-container:hover .controls,
-    .video-container.paused .controls { opacity: 1; }
 
     /* Seek bar */
     .seek-wrap {
       position: relative;
       height: 5px;
-      background: #ffffff22;
+      background: #2a1e10;
       border-radius: 99px;
       cursor: pointer;
       margin-bottom: 10px;
-      transition: height 0.15s;
     }
-    .seek-wrap:hover { height: 8px; }
+    .seek-wrap:hover { height: 7px; }
     .seek-buffered {
       position: absolute; top: 0; left: 0;
       height: 100%;
-      background: #ffffff33;
+      background: #ffffff22;
       border-radius: 99px;
       pointer-events: none;
     }
@@ -188,18 +136,17 @@
       pointer-events: none;
     }
 
-    /* Bottom row */
     .ctrl-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .ctrl-btn {
       background: none;
       border: none;
       color: #f0ddb0;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       cursor: pointer;
       padding: 4px 6px;
       border-radius: 4px;
@@ -211,7 +158,7 @@
     .ctrl-btn:active { transform: scale(0.9); }
 
     .time-display {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       color: #c8a060;
       white-space: nowrap;
       letter-spacing: 0.05em;
@@ -222,16 +169,16 @@
     input[type=range].vol-range {
       -webkit-appearance: none;
       appearance: none;
-      width: 72px;
-      height: 3px;
-      background: #555;
+      width: 80px;
+      height: 4px;
+      background: #3a2a10;
       border-radius: 99px;
       cursor: pointer;
       outline: none;
     }
     input[type=range].vol-range::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 12px; height: 12px;
+      width: 13px; height: 13px;
       border-radius: 50%;
       background: #c8963e;
       cursor: pointer;
@@ -246,43 +193,37 @@
     <span class="video-title" id="video-title">Carregando...</span>
   </div>
 
-  <div class="filmstrip-bar" id="fs-top">
+  <div class="filmstrip-bar">
     <script>document.write(Array(80).fill('<div class="fhole"></div>').join(''))</script>
   </div>
 
   <div class="player-wrap">
     <div class="player-outer">
-      <div class="video-container paused" id="vc">
 
-        <video id="video" preload="metadata" playsinline></video>
+      <video id="video" preload="auto" playsinline></video>
 
-        <!-- flash indicator -->
-        <div class="flash" id="flash">
-          <div class="flash-icon" id="flash-icon">▶</div>
-        </div>
-
-        <!-- volume toast -->
-        <div class="vol-toast" id="vol-toast">🔊 100%</div>
-
-        <!-- controls overlay -->
-        <div class="controls" id="controls">
-          <div class="seek-wrap" id="seek-wrap">
-            <div class="seek-buffered" id="seek-buffered"></div>
-            <div class="seek-fill" id="seek-fill"></div>
-          </div>
-          <div class="ctrl-row">
-            <button class="ctrl-btn" id="play-btn" title="Play/Pause [Espaço]">▶</button>
-            <button class="ctrl-btn" id="vol-down" title="Volume − [↓]">🔉</button>
-            <input type="range" class="vol-range" id="vol-range" min="0" max="100" value="100" title="Volume" />
-            <button class="ctrl-btn" id="vol-up" title="Volume + [↑]">🔊</button>
-            <span class="time-display" id="time-display">0:00 / 0:00</span>
-            <div class="spacer"></div>
-            <button class="ctrl-btn" id="mute-btn" title="Mudo [M]">🔊</button>
-            <button class="ctrl-btn" id="fs-btn" title="Tela cheia [F]">⛶</button>
-          </div>
-        </div>
-
+      <div class="codec-warn" id="codec-warn">
+        ⚠ Este vídeo não pode ser exibido — o codec pode não ser suportado pelo navegador.
+        Converta para <strong>MP4 (H.264)</strong> e envie novamente.
       </div>
+
+      <div class="controls">
+        <div class="seek-wrap" id="seek-wrap">
+          <div class="seek-buffered" id="seek-buffered"></div>
+          <div class="seek-fill" id="seek-fill"></div>
+        </div>
+        <div class="ctrl-row">
+          <button class="ctrl-btn" id="play-btn" title="Play/Pause [Espaço]">▶</button>
+          <button class="ctrl-btn" id="vol-down" title="Volume − [↓]">🔉</button>
+          <input type="range" class="vol-range" id="vol-range" min="0" max="100" value="100" />
+          <button class="ctrl-btn" id="vol-up" title="Volume + [↑]">🔊</button>
+          <button class="ctrl-btn" id="mute-btn" title="Mudo [M]">🔊</button>
+          <span class="time-display" id="time-display">0:00 / 0:00</span>
+          <div class="spacer"></div>
+          <button class="ctrl-btn" id="fs-btn" title="Tela cheia [F]">⛶</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -297,86 +238,58 @@
       document.title = `${displayName} — Low Budget Studio`;
       document.getElementById('video-title').textContent = displayName;
 
-      const video   = document.getElementById('video');
-      const vc      = document.getElementById('vc');
-      const playBtn = document.getElementById('play-btn');
-      const volDown = document.getElementById('vol-down');
-      const volUp   = document.getElementById('vol-up');
-      const volRange= document.getElementById('vol-range');
-      const muteBtn = document.getElementById('mute-btn');
-      const timeEl  = document.getElementById('time-display');
-      const seekFill= document.getElementById('seek-fill');
-      const seekBuf = document.getElementById('seek-buffered');
-      const seekWrap= document.getElementById('seek-wrap');
-      const fsBtn   = document.getElementById('fs-btn');
-      const flash   = document.getElementById('flash');
-      const flashIcon= document.getElementById('flash-icon');
-      const volToast= document.getElementById('vol-toast');
+      const video    = document.getElementById('video');
+      const playBtn  = document.getElementById('play-btn');
+      const volDown  = document.getElementById('vol-down');
+      const volUp    = document.getElementById('vol-up');
+      const volRange = document.getElementById('vol-range');
+      const muteBtn  = document.getElementById('mute-btn');
+      const timeEl   = document.getElementById('time-display');
+      const seekFill = document.getElementById('seek-fill');
+      const seekBuf  = document.getElementById('seek-buffered');
+      const seekWrap = document.getElementById('seek-wrap');
+      const fsBtn    = document.getElementById('fs-btn');
+      const codecWarn= document.getElementById('codec-warn');
 
-      video.src = `/stream/${encodeURIComponent(filename)}`;
+      video.src = `/stream/${filename}`;
+      video.load();
 
-      let flashTimer, volTimer, dragging = false;
+      // Detecção de codec sem suporte
+      video.addEventListener('error', () => codecWarn.classList.add('show'));
 
-      // --- Play / Pause ---
+      // Detecta se vídeo está a tocar mas sem frames (codec de vídeo sem suporte)
+      video.addEventListener('playing', () => {
+        setTimeout(() => {
+          if (video.videoWidth === 0) codecWarn.classList.add('show');
+        }, 800);
+      });
+
+      // Play / Pause
       function togglePlay() {
         if (video.paused) video.play(); else video.pause();
       }
-
-      video.addEventListener('play', () => {
-        playBtn.textContent = '⏸';
-        vc.classList.remove('paused');
-        showFlash('⏸');
-      });
-      video.addEventListener('pause', () => {
-        playBtn.textContent = '▶';
-        vc.classList.add('paused');
-        showFlash('▶');
-      });
-
+      video.addEventListener('play',  () => playBtn.textContent = '⏸');
+      video.addEventListener('pause', () => playBtn.textContent = '▶');
       playBtn.addEventListener('click', togglePlay);
       video.addEventListener('click', togglePlay);
 
-      function showFlash(icon) {
-        flashIcon.textContent = icon;
-        flash.classList.remove('show');
-        void flash.offsetWidth; // reflow to restart transition
-        flash.classList.add('show');
-        clearTimeout(flashTimer);
-        flashTimer = setTimeout(() => flash.classList.remove('show'), 650);
-      }
-
-      // --- Volume ---
+      // Volume
       function setVolume(val) {
         val = Math.max(0, Math.min(100, Math.round(val)));
         video.volume = val / 100;
         video.muted = val === 0;
         volRange.value = val;
-        updateMuteBtn();
-        showVolToast(val);
+        muteBtn.textContent = (video.muted || val === 0) ? '🔇' : '🔊';
       }
-
-      function updateMuteBtn() {
-        muteBtn.textContent = video.muted || video.volume === 0 ? '🔇' : '🔊';
-      }
-
-      function showVolToast(val) {
-        const icon = val === 0 ? '🔇' : val < 50 ? '🔉' : '🔊';
-        volToast.textContent = `${icon} ${val}%`;
-        volToast.classList.add('show');
-        clearTimeout(volTimer);
-        volTimer = setTimeout(() => volToast.classList.remove('show'), 1200);
-      }
-
       volRange.addEventListener('input', () => setVolume(Number(volRange.value)));
-      volUp.addEventListener('click', () => setVolume(video.volume * 100 + 10));
+      volUp.addEventListener('click',   () => setVolume(video.volume * 100 + 10));
       volDown.addEventListener('click', () => setVolume(video.volume * 100 - 10));
       muteBtn.addEventListener('click', () => {
         video.muted = !video.muted;
-        updateMuteBtn();
-        showVolToast(video.muted ? 0 : Math.round(video.volume * 100));
+        muteBtn.textContent = video.muted ? '🔇' : '🔊';
       });
 
-      // --- Progress ---
+      // Progress
       function fmt(s) {
         s = Math.floor(s || 0);
         const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -384,39 +297,36 @@
           ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
           : `${m}:${String(sec).padStart(2,'0')}`;
       }
-
       video.addEventListener('timeupdate', () => {
         if (!video.duration) return;
-        const pct = (video.currentTime / video.duration) * 100;
-        seekFill.style.width = pct + '%';
+        seekFill.style.width = (video.currentTime / video.duration * 100) + '%';
         timeEl.textContent = `${fmt(video.currentTime)} / ${fmt(video.duration)}`;
       });
-
       video.addEventListener('progress', () => {
         if (!video.duration || !video.buffered.length) return;
         seekBuf.style.width = (video.buffered.end(video.buffered.length - 1) / video.duration * 100) + '%';
       });
 
+      // Seek
+      let dragging = false;
       function seekTo(e) {
         const rect = seekWrap.getBoundingClientRect();
-        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        video.currentTime = pct * video.duration;
+        video.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * video.duration;
       }
-
       seekWrap.addEventListener('mousedown', e => { dragging = true; seekTo(e); });
       document.addEventListener('mousemove', e => { if (dragging) seekTo(e); });
-      document.addEventListener('mouseup', () => { dragging = false; });
+      document.addEventListener('mouseup', () => dragging = false);
 
-      // --- Fullscreen ---
+      // Fullscreen — tela cheia no player inteiro
+      const playerOuter = document.querySelector('.player-outer');
       fsBtn.addEventListener('click', () => {
-        const target = document.fullscreenElement ? null : vc;
-        target ? vc.requestFullscreen() : document.exitFullscreen();
+        document.fullscreenElement ? document.exitFullscreen() : playerOuter.requestFullscreen();
       });
       document.addEventListener('fullscreenchange', () => {
         fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
       });
 
-      // --- Keyboard ---
+      // Keyboard
       document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
         switch (e.key) {
@@ -426,12 +336,10 @@
           case 'ArrowRight': video.currentTime = Math.min(video.duration, video.currentTime + 10); break;
           case 'ArrowLeft':  video.currentTime = Math.max(0, video.currentTime - 10); break;
           case 'f': case 'F':
-            document.fullscreenElement ? document.exitFullscreen() : vc.requestFullscreen(); break;
+            document.fullscreenElement ? document.exitFullscreen() : playerOuter.requestFullscreen(); break;
           case 'm': case 'M':
             video.muted = !video.muted;
-            updateMuteBtn();
-            showVolToast(video.muted ? 0 : Math.round(video.volume * 100));
-            break;
+            muteBtn.textContent = video.muted ? '🔇' : '🔊'; break;
         }
       });
     }
