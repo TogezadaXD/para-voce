@@ -3,155 +3,245 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vídeos</title>
+  <title>Low Budget Studio</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Special+Elite&display=swap');
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #0d0d0d;
-      color: #f0f0f0;
-      font-family: system-ui, sans-serif;
+      background-color: #1c1008;
+      background-image:
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 40px),
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 40px),
+        linear-gradient(160deg, #2e1a0a 0%, #1c1008 40%, #110b04 100%);
+      color: #f0ddb0;
+      font-family: 'Special Elite', 'Courier New', monospace;
       min-height: 100vh;
     }
 
-    header {
-      padding: 24px 32px;
-      border-bottom: 1px solid #1e1e1e;
+    /* Film strip top */
+    .filmstrip {
+      height: 36px;
+      background: #0d0d0d;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 0;
+      overflow: hidden;
+      border-bottom: 3px solid #c8963e;
+    }
+    .filmstrip-hole {
+      width: 22px; height: 18px;
+      background: #1c1008;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin: 0 6px;
     }
 
+    /* Header */
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px 20px;
+      border-bottom: 2px solid #c8963e44;
+      position: relative;
+    }
+    header img.logo {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 24px #0008);
+      margin-bottom: 8px;
+    }
     header h1 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      letter-spacing: -0.5px;
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: #c8963e;
+      letter-spacing: 0.08em;
+      text-shadow: 2px 2px 0 #0008;
+    }
+    header p.tagline {
+      font-size: 0.8rem;
+      color: #9a7a50;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 4px;
     }
 
-    .icon { font-size: 1.5rem; }
-
-    main { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+    main { max-width: 860px; margin: 0 auto; padding: 36px 20px 60px; }
 
     /* Upload zone */
     .upload-zone {
-      border: 2px dashed #333;
-      border-radius: 16px;
-      padding: 48px 32px;
+      border: 2px dashed #c8963e88;
+      border-radius: 4px;
+      padding: 44px 32px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       margin-bottom: 40px;
+      background: rgba(200,150,62,0.04);
+      position: relative;
     }
+    .upload-zone::before, .upload-zone::after {
+      content: '✦';
+      position: absolute;
+      top: 10px;
+      color: #c8963e66;
+      font-size: 0.9rem;
+    }
+    .upload-zone::before { left: 14px; }
+    .upload-zone::after { right: 14px; }
     .upload-zone:hover, .upload-zone.drag-over {
-      border-color: #5e8aff;
-      background: #5e8aff0d;
+      border-color: #c8963e;
+      background: rgba(200,150,62,0.08);
     }
-    .upload-zone p { color: #888; margin-top: 8px; font-size: 0.9rem; }
-    .upload-zone strong { color: #f0f0f0; font-size: 1rem; }
-
+    .upload-zone strong {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: #f0ddb0;
+      margin-bottom: 8px;
+    }
+    .upload-zone p { color: #9a7a50; font-size: 0.82rem; letter-spacing: 0.05em; }
     #file-input { display: none; }
 
     /* Progress */
     .progress-wrap {
       display: none;
       margin-bottom: 24px;
-      background: #1a1a1a;
-      border-radius: 12px;
+      background: #0d0d0d;
+      border: 1px solid #c8963e44;
+      border-radius: 4px;
       padding: 16px 20px;
     }
     .progress-wrap.active { display: block; }
-    .progress-label { font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
-    .progress-bar-bg {
-      height: 6px;
-      background: #2a2a2a;
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #5e8aff;
-      border-radius: 99px;
-      transition: width 0.15s;
-    }
-    .progress-pct { font-size: 0.85rem; color: #5e8aff; margin-top: 6px; text-align: right; }
+    .progress-label { font-size: 0.82rem; color: #9a7a50; margin-bottom: 8px; letter-spacing: 0.05em; }
+    .progress-bar-bg { height: 5px; background: #2a1e10; border-radius: 99px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: #c8963e; border-radius: 99px; transition: width 0.15s; }
+    .progress-pct { font-size: 0.82rem; color: #c8963e; margin-top: 6px; text-align: right; }
 
-    /* Status message */
-    .status { font-size: 0.9rem; margin-bottom: 24px; min-height: 1.2em; }
-    .status.ok { color: #4ade80; }
-    .status.err { color: #f87171; }
+    /* Status */
+    .status { font-size: 0.88rem; margin-bottom: 24px; min-height: 1.2em; letter-spacing: 0.04em; }
+    .status.ok { color: #7dba6e; }
+    .status.err { color: #c0504a; }
+
+    /* Section title */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .section-title span {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: #c8963e;
+      letter-spacing: 0.06em;
+    }
+    .section-title::before, .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #c8963e44;
+    }
 
     /* Video list */
-    h2 { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 16px; letter-spacing: 0.05em; text-transform: uppercase; }
-
     .video-list { display: flex; flex-direction: column; gap: 10px; }
 
     .video-item {
       display: flex;
       align-items: center;
       gap: 16px;
-      background: #151515;
-      border: 1px solid #1e1e1e;
-      border-radius: 12px;
+      background: rgba(13,10,5,0.7);
+      border: 1px solid #c8963e33;
+      border-left: 3px solid #c8963e;
+      border-radius: 4px;
       padding: 14px 18px;
-      text-decoration: none;
-      color: inherit;
       transition: border-color 0.15s, background 0.15s;
     }
-    .video-item:hover { border-color: #333; background: #1a1a1a; }
+    .video-item:hover { border-color: #c8963eaa; background: rgba(200,150,62,0.06); }
 
     .video-thumb { font-size: 1.8rem; flex-shrink: 0; }
 
     .video-info { flex: 1; min-width: 0; }
     .video-name {
+      font-family: 'Playfair Display', serif;
       font-size: 0.95rem;
-      font-weight: 500;
+      color: #f0ddb0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .video-meta { font-size: 0.78rem; color: #666; margin-top: 3px; }
+    .video-meta { font-size: 0.75rem; color: #7a6040; margin-top: 4px; letter-spacing: 0.04em; }
 
     .btn-play {
-      background: #5e8aff;
-      color: #fff;
+      background: #c8963e;
+      color: #0d0d0d;
       border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.85rem;
+      border-radius: 3px;
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-family: 'Special Elite', monospace;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
-      font-weight: 500;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      transition: background 0.15s;
     }
-    .btn-play:hover { background: #4a78f0; }
+    .btn-play:hover { background: #e0ad55; }
 
     .btn-delete {
       background: transparent;
-      color: #666;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
+      color: #5a4030;
+      border: 1px solid #3a2a1a;
+      border-radius: 3px;
       padding: 8px 10px;
       font-size: 0.85rem;
       cursor: pointer;
       flex-shrink: 0;
       transition: color 0.15s, border-color 0.15s;
     }
-    .btn-delete:hover { color: #f87171; border-color: #f87171; }
+    .btn-delete:hover { color: #c0504a; border-color: #c0504a; }
 
-    .empty { color: #555; text-align: center; padding: 40px 0; font-size: 0.95rem; }
+    .empty {
+      color: #5a4030;
+      text-align: center;
+      padding: 40px 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* Filmstrip bottom */
+    .filmstrip-bottom {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 30px;
+      background: #0d0d0d;
+      display: flex;
+      align-items: center;
+      border-top: 3px solid #c8963e;
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
+
+  <div class="filmstrip">
+    <script>document.write(Array(60).fill('<div class="filmstrip-hole"></div>').join(''))</script>
+  </div>
+
   <header>
-    <span class="icon">🎬</span>
-    <h1>Vídeos</h1>
+    <img class="logo" src="/logo.png" alt="Low Budget Studio" />
+    <h1>Low Budget Studio</h1>
+    <p class="tagline">Sua biblioteca de vídeos</p>
   </header>
 
   <main>
     <div class="upload-zone" id="drop-zone">
-      <strong>Clique para selecionar ou arraste o vídeo aqui</strong>
-      <p>MP4, MKV, WebM, MOV, AVI — até 20 GB</p>
+      <strong>Clique ou arraste o vídeo aqui</strong>
+      <p>MP4 · MKV · WebM · MOV · AVI &nbsp;—&nbsp; até 20 GB</p>
       <input type="file" id="file-input" accept=".mp4,.mkv,.webm,.mov,.avi" />
     </div>
 
@@ -163,9 +253,13 @@
 
     <div class="status" id="status"></div>
 
-    <h2>Vídeos salvos</h2>
+    <div class="section-title"><span>Na Biblioteca</span></div>
     <div class="video-list" id="video-list"></div>
   </main>
+
+  <div class="filmstrip-bottom">
+    <script>document.write(Array(60).fill('<div class="filmstrip-hole"></div>').join(''))</script>
+  </div>
 
   <script>
     const dropZone = document.getElementById('drop-zone');
@@ -179,7 +273,6 @@
 
     dropZone.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => fileInput.files[0] && uploadFile(fileInput.files[0]));
-
     dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
     dropZone.addEventListener('drop', e => {
@@ -191,12 +284,11 @@
     function uploadFile(file) {
       const form = new FormData();
       form.append('video', file);
-
       const xhr = new XMLHttpRequest();
       progressWrap.classList.add('active');
       progressBar.style.width = '0%';
       progressPct.textContent = '0%';
-      progressLabel.textContent = `Enviando ${file.name}…`;
+      progressLabel.textContent = `Enviando: ${file.name}`;
       setStatus('');
 
       xhr.upload.addEventListener('progress', e => {
@@ -205,24 +297,17 @@
         progressBar.style.width = pct + '%';
         progressPct.textContent = pct + '%';
       });
-
       xhr.addEventListener('load', () => {
         progressWrap.classList.remove('active');
-        if (xhr.status === 200) {
-          setStatus('Vídeo enviado com sucesso!', 'ok');
-          loadVideos();
-        } else {
-          setStatus('Erro ao enviar o vídeo.', 'err');
-        }
+        if (xhr.status === 200) { setStatus('Vídeo enviado com sucesso!', 'ok'); loadVideos(); }
+        else { setStatus('Erro ao enviar o vídeo.', 'err'); }
         fileInput.value = '';
       });
-
       xhr.addEventListener('error', () => {
         progressWrap.classList.remove('active');
-        setStatus('Erro de conexão ao enviar.', 'err');
+        setStatus('Erro de conexão.', 'err');
         fileInput.value = '';
       });
-
       xhr.open('POST', '/upload');
       xhr.send(form);
     }
@@ -232,11 +317,10 @@
       statusEl.className = 'status' + (type ? ' ' + type : '');
     }
 
-    function formatSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KB';
-      if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + ' MB';
-      return (bytes / 1024 ** 3).toFixed(2) + ' GB';
+    function formatSize(b) {
+      if (b < 1024 ** 2) return (b / 1024).toFixed(1) + ' KB';
+      if (b < 1024 ** 3) return (b / 1024 ** 2).toFixed(1) + ' MB';
+      return (b / 1024 ** 3).toFixed(2) + ' GB';
     }
 
     function formatDate(d) {
@@ -247,34 +331,30 @@
       const res = await fetch('/videos');
       const videos = await res.json();
       listEl.innerHTML = '';
-
       if (!videos.length) {
-        listEl.innerHTML = '<div class="empty">Nenhum vídeo ainda. Faça o upload acima.</div>';
+        listEl.innerHTML = '<div class="empty">— Nenhum vídeo na biblioteca ainda —</div>';
         return;
       }
-
       videos.forEach(v => {
         const item = document.createElement('div');
         item.className = 'video-item';
         item.innerHTML = `
-          <div class="video-thumb">🎥</div>
+          <div class="video-thumb">📽</div>
           <div class="video-info">
             <div class="video-name">${v.filename.replace(/^\d+-/, '')}</div>
-            <div class="video-meta">${formatSize(v.size)} &middot; ${formatDate(v.date)}</div>
+            <div class="video-meta">${formatSize(v.size)} &nbsp;·&nbsp; ${formatDate(v.date)}</div>
           </div>
-          <button class="btn-play" onclick="watch('${encodeURIComponent(v.filename)}')">Assistir</button>
-          <button class="btn-delete" title="Apagar" onclick="deleteVideo('${encodeURIComponent(v.filename)}', this)">🗑</button>
+          <button class="btn-play" onclick="watch('${encodeURIComponent(v.filename)}')">▶ ASSISTIR</button>
+          <button class="btn-delete" title="Apagar" onclick="deleteVideo('${encodeURIComponent(v.filename)}')">🗑</button>
         `;
         listEl.appendChild(item);
       });
     }
 
-    function watch(filename) {
-      window.location.href = `/player.html?v=${filename}`;
-    }
+    function watch(filename) { window.location.href = `/player.html?v=${filename}`; }
 
-    async function deleteVideo(filename, btn) {
-      if (!confirm('Apagar este vídeo?')) return;
+    async function deleteVideo(filename) {
+      if (!confirm('Apagar este vídeo da biblioteca?')) return;
       const res = await fetch(`/videos/${filename}`, { method: 'DELETE' });
       if (res.ok) loadVideos();
       else setStatus('Erro ao apagar.', 'err');
