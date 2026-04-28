@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,9 +23,12 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 * 1024 },
 });
 
+// Estado das conversões em memória
+const conversions = {};
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Upload — multer chamado como callback para capturar erros no Express 5
+// Upload
 app.post('/upload', (req, res) => {
   upload.single('video')(req, res, (err) => {
     if (err) return res.status(400).json({ error: err.message });
@@ -40,13 +44,59 @@ app.get('/videos', (req, res) => {
       .filter(f => /\.(mp4|mkv|webm|mov|avi|m4v)$/i.test(f))
       .map(f => {
         const stat = fs.statSync(path.join(UPLOADS_DIR, f));
-        return { filename: f, size: stat.size, date: stat.mtime };
+        return {
+          filename: f,
+          size: stat.size,
+          date: stat.mtime,
+          converting: conversions[f]?.status === 'converting',
+        };
       })
       .sort((a, b) => new Date(b.date) - new Date(a.date));
     res.json(files);
   } catch (e) {
     res.json([]);
   }
+});
+
+// Converter MKV → MP4 em background
+app.post('/convert/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  const inputFile = path.join(UPLOADS_DIR, filename);
+
+  if (!fs.existsSync(inputFile)) return res.status(404).json({ error: 'Não encontrado' });
+  if (conversions[filename]?.status === 'converting') return res.json({ status: 'converting' });
+
+  const outputFilename = filename.replace(/\.[^.]+$/, '') + '_converted.mp4';
+  const outputFile = path.join(UPLOADS_DIR, outputFilename);
+
+  conversions[filename] = { status: 'converting', output: outputFilename };
+
+  const ffmpeg = spawn('ffmpeg', [
+    '-i', inputFile,
+    '-c:v', 'libx264',
+    '-c:a', 'aac',
+    '-preset', 'fast',
+    '-movflags', '+faststart',
+    '-y',
+    outputFile,
+  ]);
+
+  ffmpeg.on('close', (code) => {
+    if (code === 0) {
+      conversions[filename] = { status: 'done', output: outputFilename };
+      try { fs.unlinkSync(inputFile); } catch (_) {}
+    } else {
+      conversions[filename] = { status: 'error' };
+    }
+  });
+
+  res.json({ status: 'converting', output: outputFilename });
+});
+
+// Status da conversão
+app.get('/convert-status/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  res.json(conversions[filename] || { status: 'idle' });
 });
 
 // Delete vídeo
@@ -67,15 +117,11 @@ app.get('/stream/:filename', (req, res) => {
   const range = req.headers.range;
 
   const mimeTypes = {
-    '.mp4': 'video/mp4',
-    '.mkv': 'video/x-matroska',
-    '.webm': 'video/webm',
-    '.mov': 'video/quicktime',
-    '.avi': 'video/x-msvideo',
-    '.m4v': 'video/mp4',
+    '.mp4': 'video/mp4', '.mkv': 'video/x-matroska',
+    '.webm': 'video/webm', '.mov': 'video/quicktime',
+    '.avi': 'video/x-msvideo', '.m4v': 'video/mp4',
   };
-  const ext = path.extname(file).toLowerCase();
-  const contentType = mimeTypes[ext] || 'video/mp4';
+  const contentType = mimeTypes[path.extname(file).toLowerCase()] || 'video/mp4';
 
   if (range) {
     const [startStr, endStr] = range.replace(/bytes=/, '').split('-');

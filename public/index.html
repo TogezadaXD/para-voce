@@ -205,6 +205,31 @@
     }
     .btn-delete:hover { color: #c0504a; border-color: #c0504a; }
 
+    .btn-convert {
+      background: transparent;
+      color: #c8963e;
+      border: 1px solid #c8963e66;
+      border-radius: 3px;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      font-family: 'Special Elite', monospace;
+      cursor: pointer;
+      flex-shrink: 0;
+      letter-spacing: 0.06em;
+      transition: background 0.15s;
+    }
+    .btn-convert:hover { background: #c8963e22; }
+    .btn-convert:disabled { opacity: 0.4; cursor: default; }
+
+    .converting-badge {
+      font-size: 0.72rem;
+      color: #c8963e;
+      letter-spacing: 0.08em;
+      animation: pulse 1.2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
     .empty {
       color: #5a4030;
       text-align: center;
@@ -336,22 +361,50 @@
         return;
       }
       videos.forEach(v => {
+        const isMkv = /\.mkv$/i.test(v.filename);
+        const enc = encodeURIComponent(v.filename);
         const item = document.createElement('div');
         item.className = 'video-item';
+        item.dataset.filename = v.filename;
         item.innerHTML = `
           <div class="video-thumb">📽</div>
           <div class="video-info">
             <div class="video-name">${v.filename.replace(/^\d+-/, '')}</div>
-            <div class="video-meta">${formatSize(v.size)} &nbsp;·&nbsp; ${formatDate(v.date)}</div>
+            <div class="video-meta">${formatSize(v.size)} &nbsp;·&nbsp; ${formatDate(v.date)}${isMkv ? ' &nbsp;·&nbsp; <span style="color:#c8963e">MKV</span>' : ''}</div>
           </div>
-          <button class="btn-play" onclick="watch('${encodeURIComponent(v.filename)}')">▶ ASSISTIR</button>
-          <button class="btn-delete" title="Apagar" onclick="deleteVideo('${encodeURIComponent(v.filename)}')">🗑</button>
+          ${v.converting
+            ? `<span class="converting-badge">⚙ CONVERTENDO...</span>`
+            : isMkv
+              ? `<button class="btn-convert" onclick="convertVideo('${enc}', this)">⚙ CONVERTER</button>`
+              : `<button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>`
+          }
+          <button class="btn-delete" title="Apagar" onclick="deleteVideo('${enc}')">🗑</button>
         `;
         listEl.appendChild(item);
       });
     }
 
     function watch(filename) { window.location.href = `/player.html?v=${filename}`; }
+
+    async function convertVideo(filename, btn) {
+      btn.disabled = true;
+      btn.textContent = '⚙ CONVERTENDO...';
+      await fetch(`/convert/${filename}`, { method: 'POST' });
+      pollConversion(decodeURIComponent(filename));
+    }
+
+    function pollConversion(filename) {
+      const enc = encodeURIComponent(filename);
+      const interval = setInterval(async () => {
+        const res = await fetch(`/convert-status/${enc}`);
+        const data = await res.json();
+        if (data.status === 'done' || data.status === 'error') {
+          clearInterval(interval);
+          if (data.status === 'error') setStatus('Erro na conversão.', 'err');
+          loadVideos();
+        }
+      }, 4000);
+    }
 
     async function deleteVideo(filename) {
       if (!confirm('Apagar este vídeo da biblioteca?')) return;
