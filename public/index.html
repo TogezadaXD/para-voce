@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vídeos</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #f0f0f0;
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 24px 32px;
+      border-bottom: 1px solid #1e1e1e;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .icon { font-size: 1.5rem; }
+
+    main { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed #333;
+      border-radius: 16px;
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 40px;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #5e8aff;
+      background: #5e8aff0d;
+    }
+    .upload-zone p { color: #888; margin-top: 8px; font-size: 0.9rem; }
+    .upload-zone strong { color: #f0f0f0; font-size: 1rem; }
+
+    #file-input { display: none; }
+
+    /* Progress */
+    .progress-wrap {
+      display: none;
+      margin-bottom: 24px;
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .progress-wrap.active { display: block; }
+    .progress-label { font-size: 0.85rem; color: #aaa; margin-bottom: 8px; }
+    .progress-bar-bg {
+      height: 6px;
+      background: #2a2a2a;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #5e8aff;
+      border-radius: 99px;
+      transition: width 0.15s;
+    }
+    .progress-pct { font-size: 0.85rem; color: #5e8aff; margin-top: 6px; text-align: right; }
+
+    /* Status message */
+    .status { font-size: 0.9rem; margin-bottom: 24px; min-height: 1.2em; }
+    .status.ok { color: #4ade80; }
+    .status.err { color: #f87171; }
+
+    /* Video list */
+    h2 { font-size: 1rem; color: #888; font-weight: 500; margin-bottom: 16px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    .video-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .video-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #151515;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 14px 18px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .video-item:hover { border-color: #333; background: #1a1a1a; }
+
+    .video-thumb { font-size: 1.8rem; flex-shrink: 0; }
+
+    .video-info { flex: 1; min-width: 0; }
+    .video-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .video-meta { font-size: 0.78rem; color: #666; margin-top: 3px; }
+
+    .btn-play {
+      background: #5e8aff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .btn-play:hover { background: #4a78f0; }
+
+    .btn-delete {
+      background: transparent;
+      color: #666;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-delete:hover { color: #f87171; border-color: #f87171; }
+
+    .empty { color: #555; text-align: center; padding: 40px 0; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="icon">🎬</span>
+    <h1>Vídeos</h1>
+  </header>
+
+  <main>
+    <div class="upload-zone" id="drop-zone">
+      <strong>Clique para selecionar ou arraste o vídeo aqui</strong>
+      <p>MP4, MKV, WebM, MOV, AVI — até 20 GB</p>
+      <input type="file" id="file-input" accept=".mp4,.mkv,.webm,.mov,.avi" />
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label" id="progress-label">Enviando...</div>
+      <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="progress-pct" id="progress-pct">0%</div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <h2>Vídeos salvos</h2>
+    <div class="video-list" id="video-list"></div>
+  </main>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPct = document.getElementById('progress-pct');
+    const progressLabel = document.getElementById('progress-label');
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('video-list');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => fileInput.files[0] && uploadFile(fileInput.files[0]));
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+    });
+
+    function uploadFile(file) {
+      const form = new FormData();
+      form.append('video', file);
+
+      const xhr = new XMLHttpRequest();
+      progressWrap.classList.add('active');
+      progressBar.style.width = '0%';
+      progressPct.textContent = '0%';
+      progressLabel.textContent = `Enviando ${file.name}…`;
+      setStatus('');
+
+      xhr.upload.addEventListener('progress', e => {
+        if (!e.lengthComputable) return;
+        const pct = Math.round((e.loaded / e.total) * 100);
+        progressBar.style.width = pct + '%';
+        progressPct.textContent = pct + '%';
+      });
+
+      xhr.addEventListener('load', () => {
+        progressWrap.classList.remove('active');
+        if (xhr.status === 200) {
+          setStatus('Vídeo enviado com sucesso!', 'ok');
+          loadVideos();
+        } else {
+          setStatus('Erro ao enviar o vídeo.', 'err');
+        }
+        fileInput.value = '';
+      });
+
+      xhr.addEventListener('error', () => {
+        progressWrap.classList.remove('active');
+        setStatus('Erro de conexão ao enviar.', 'err');
+        fileInput.value = '';
+      });
+
+      xhr.open('POST', '/upload');
+      xhr.send(form);
+    }
+
+    function setStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KB';
+      if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + ' MB';
+      return (bytes / 1024 ** 3).toFixed(2) + ' GB';
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    async function loadVideos() {
+      const res = await fetch('/videos');
+      const videos = await res.json();
+      listEl.innerHTML = '';
+
+      if (!videos.length) {
+        listEl.innerHTML = '<div class="empty">Nenhum vídeo ainda. Faça o upload acima.</div>';
+        return;
+      }
+
+      videos.forEach(v => {
+        const item = document.createElement('div');
+        item.className = 'video-item';
+        item.innerHTML = `
+          <div class="video-thumb">🎥</div>
+          <div class="video-info">
+            <div class="video-name">${v.filename.replace(/^\d+-/, '')}</div>
+            <div class="video-meta">${formatSize(v.size)} &middot; ${formatDate(v.date)}</div>
+          </div>
+          <button class="btn-play" onclick="watch('${encodeURIComponent(v.filename)}')">Assistir</button>
+          <button class="btn-delete" title="Apagar" onclick="deleteVideo('${encodeURIComponent(v.filename)}', this)">🗑</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function watch(filename) {
+      window.location.href = `/player.html?v=${filename}`;
+    }
+
+    async function deleteVideo(filename, btn) {
+      if (!confirm('Apagar este vídeo?')) return;
+      const res = await fetch(`/videos/${filename}`, { method: 'DELETE' });
+      if (res.ok) loadVideos();
+      else setStatus('Erro ao apagar.', 'err');
+    }
+
+    loadVideos();
+  </script>
+</body>
+</html>

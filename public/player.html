@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #000;
+      color: #f0f0f0;
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: #0d0d0d;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+    .back-btn:hover { color: #f0f0f0; background: #1a1a1a; }
+    .video-title { font-size: 0.95rem; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Player wrapper */
+    .player-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      gap: 16px;
+    }
+
+    .player-container {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px #0008;
+    }
+
+    video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16/9;
+      background: #000;
+    }
+
+    /* Custom controls */
+    .controls {
+      background: linear-gradient(to top, #000c, transparent);
+      padding: 16px 20px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    /* Progress bar */
+    .progress-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      cursor: pointer;
+      background: #ffffff22;
+    }
+    .progress-container:hover { height: 7px; }
+    .progress-fill {
+      height: 100%;
+      background: #5e8aff;
+      pointer-events: none;
+      border-radius: 0 99px 99px 0;
+    }
+    .progress-buffered {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      background: #ffffff33;
+      pointer-events: none;
+    }
+
+    /* Buttons */
+    .ctrl-btn {
+      background: none;
+      border: none;
+      color: #f0f0f0;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: transform 0.1s;
+    }
+    .ctrl-btn:hover { transform: scale(1.15); }
+    .ctrl-btn:active { transform: scale(0.95); }
+
+    /* Time */
+    .time { font-size: 0.82rem; color: #bbb; white-space: nowrap; }
+
+    /* Volume */
+    .volume-group { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .volume-btn { font-size: 1.1rem; }
+    input[type=range].volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 4px;
+      border-radius: 99px;
+      background: #444;
+      cursor: pointer;
+      outline: none;
+    }
+    input[type=range].volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #5e8aff;
+      cursor: pointer;
+    }
+
+    /* Fullscreen btn */
+    .fs-btn { font-size: 1.1rem; }
+
+    /* Big play overlay */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .overlay.show { opacity: 1; }
+    .overlay-icon { font-size: 5rem; filter: drop-shadow(0 2px 12px #000a); }
+
+    /* Vol indicator */
+    .vol-indicator {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: #000b;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .vol-indicator.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <button class="back-btn" onclick="history.back()">← Voltar</button>
+    <span class="video-title" id="video-title">Carregando...</span>
+  </div>
+
+  <div class="player-wrap">
+    <div class="player-container" id="player-container">
+      <video id="video" preload="metadata"></video>
+
+      <div class="overlay" id="overlay">
+        <span class="overlay-icon" id="overlay-icon">▶</span>
+      </div>
+
+      <div class="vol-indicator" id="vol-indicator">🔊 100%</div>
+
+      <div class="controls">
+        <div class="progress-container" id="progress-container">
+          <div class="progress-buffered" id="progress-buffered"></div>
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <!-- Play/Pause -->
+        <button class="ctrl-btn" id="play-btn" title="Play/Pause (Espaço)">▶</button>
+
+        <!-- Volume down -->
+        <button class="ctrl-btn volume-btn" id="vol-down" title="Volume − (↓)">🔉</button>
+
+        <!-- Volume slider -->
+        <div class="volume-group">
+          <input type="range" class="volume-slider" id="vol-slider" min="0" max="100" value="100" title="Volume" />
+        </div>
+
+        <!-- Volume up -->
+        <button class="ctrl-btn volume-btn" id="vol-up" title="Volume + (↑)">🔊</button>
+
+        <!-- Time -->
+        <span class="time" id="time">0:00 / 0:00</span>
+
+        <!-- Fullscreen -->
+        <button class="ctrl-btn fs-btn" id="fs-btn" title="Tela cheia (F)">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const filename = params.get('v');
+
+    if (!filename) {
+      document.getElementById('video-title').textContent = 'Vídeo não especificado';
+    } else {
+      const displayName = decodeURIComponent(filename).replace(/^\d+-/, '');
+      document.title = displayName;
+      document.getElementById('video-title').textContent = displayName;
+
+      const video = document.getElementById('video');
+      video.src = `/stream/${filename}`;
+
+      const playBtn = document.getElementById('play-btn');
+      const volSlider = document.getElementById('vol-slider');
+      const volUp = document.getElementById('vol-up');
+      const volDown = document.getElementById('vol-down');
+      const timeEl = document.getElementById('time');
+      const progressFill = document.getElementById('progress-fill');
+      const progressBuffered = document.getElementById('progress-buffered');
+      const progressContainer = document.getElementById('progress-container');
+      const fsBtn = document.getElementById('fs-btn');
+      const overlay = document.getElementById('overlay');
+      const overlayIcon = document.getElementById('overlay-icon');
+      const volIndicator = document.getElementById('vol-indicator');
+      const playerContainer = document.getElementById('player-container');
+
+      let overlayTimer, volTimer;
+
+      // --- Play / Pause ---
+      function togglePlay() {
+        if (video.paused) { video.play(); }
+        else { video.pause(); }
+      }
+
+      video.addEventListener('play', () => {
+        playBtn.textContent = '⏸';
+        showOverlay('⏸');
+      });
+      video.addEventListener('pause', () => {
+        playBtn.textContent = '▶';
+        showOverlay('▶');
+      });
+
+      playBtn.addEventListener('click', togglePlay);
+      video.addEventListener('click', togglePlay);
+
+      function showOverlay(icon) {
+        overlayIcon.textContent = icon;
+        overlay.classList.add('show');
+        clearTimeout(overlayTimer);
+        overlayTimer = setTimeout(() => overlay.classList.remove('show'), 700);
+      }
+
+      // --- Volume ---
+      function setVolume(val) {
+        val = Math.max(0, Math.min(100, val));
+        video.volume = val / 100;
+        volSlider.value = val;
+        showVolIndicator(val);
+      }
+
+      function showVolIndicator(val) {
+        const icon = val === 0 ? '🔇' : val < 50 ? '🔉' : '🔊';
+        volIndicator.textContent = `${icon} ${val}%`;
+        volIndicator.classList.add('show');
+        clearTimeout(volTimer);
+        volTimer = setTimeout(() => volIndicator.classList.remove('show'), 1200);
+      }
+
+      volSlider.addEventListener('input', () => setVolume(Number(volSlider.value)));
+      volUp.addEventListener('click', () => setVolume(Math.round(video.volume * 100) + 10));
+      volDown.addEventListener('click', () => setVolume(Math.round(video.volume * 100) - 10));
+
+      // --- Progress ---
+      function formatTime(s) {
+        s = Math.floor(s);
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+        if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+        return `${m}:${String(sec).padStart(2,'0')}`;
+      }
+
+      video.addEventListener('timeupdate', () => {
+        if (!video.duration) return;
+        const pct = (video.currentTime / video.duration) * 100;
+        progressFill.style.width = pct + '%';
+        timeEl.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      });
+
+      video.addEventListener('progress', () => {
+        if (!video.duration || !video.buffered.length) return;
+        const pct = (video.buffered.end(video.buffered.length - 1) / video.duration) * 100;
+        progressBuffered.style.width = pct + '%';
+      });
+
+      progressContainer.addEventListener('click', e => {
+        const rect = progressContainer.getBoundingClientRect();
+        const pct = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pct * video.duration;
+      });
+
+      // Drag on progress bar
+      let dragging = false;
+      progressContainer.addEventListener('mousedown', () => dragging = true);
+      document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const rect = progressContainer.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        video.currentTime = pct * video.duration;
+      });
+      document.addEventListener('mouseup', () => dragging = false);
+
+      // --- Fullscreen ---
+      fsBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) playerContainer.requestFullscreen();
+        else document.exitFullscreen();
+      });
+      document.addEventListener('fullscreenchange', () => {
+        fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+      });
+
+      // --- Keyboard shortcuts ---
+      document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT') return;
+        switch (e.key) {
+          case ' ': case 'k': e.preventDefault(); togglePlay(); break;
+          case 'ArrowUp': e.preventDefault(); setVolume(Math.round(video.volume * 100) + 5); break;
+          case 'ArrowDown': e.preventDefault(); setVolume(Math.round(video.volume * 100) - 5); break;
+          case 'ArrowRight': video.currentTime = Math.min(video.duration, video.currentTime + 10); break;
+          case 'ArrowLeft': video.currentTime = Math.max(0, video.currentTime - 10); break;
+          case 'f': case 'F':
+            if (!document.fullscreenElement) playerContainer.requestFullscreen();
+            else document.exitFullscreen();
+            break;
+          case 'm': case 'M':
+            video.muted = !video.muted;
+            showVolIndicator(video.muted ? 0 : Math.round(video.volume * 100));
+            break;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
