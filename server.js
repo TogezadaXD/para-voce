@@ -118,8 +118,8 @@ app.post('/transcode/:filename', (req, res) => {
     '-i', inputFile,
     '-c:v', 'libx264',
     '-pix_fmt', 'yuv420p',
-    '-preset', 'ultrafast', // menor uso de RAM
-    '-threads', '2',        // evita OOM no Railway
+    '-preset', 'ultrafast',
+    '-threads', '8',
     '-crf', '23',
     '-c:a', 'aac',
     '-y',
