@@ -84,26 +84,29 @@ app.post('/convert/:filename', (req, res) => {
 
   conversions[filename] = { status: 'converting', output: outputFilename };
 
+  // Tenta remux (cópia direta, sem recodificar — muito mais rápido)
   const ffmpeg = spawn('ffmpeg', [
     '-i', inputFile,
-    '-c:v', 'libx264',
-    '-c:a', 'aac',
-    '-preset', 'fast',
+    '-c', 'copy',
     '-movflags', '+faststart',
     '-y',
     outputFile,
   ]);
 
-  let ffmpegErr = '';
-  ffmpeg.stderr.on('data', d => { ffmpegErr += d.toString(); });
+  let ffmpegLog = '';
+  ffmpeg.stderr.on('data', d => {
+    const chunk = d.toString();
+    if (ffmpegLog.length < 3000) ffmpegLog += chunk; // guarda início do log
+  });
 
   ffmpeg.on('close', (code) => {
+    console.log('FFmpeg saiu com código', code);
+    console.log('Log:', ffmpegLog.slice(0, 1500));
     if (code === 0) {
       conversions[filename] = { status: 'done', output: outputFilename };
       try { fs.unlinkSync(inputFile); } catch (_) {}
     } else {
-      console.error('FFmpeg error (code', code, '):\n', ffmpegErr.slice(-2000));
-      conversions[filename] = { status: 'error', log: ffmpegErr.slice(-500) };
+      conversions[filename] = { status: 'error', log: ffmpegLog.slice(0, 800) };
     }
   });
 
