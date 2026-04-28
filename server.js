@@ -32,9 +32,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/diag', (req, res) => {
   const { execSync } = require('child_process');
   let ffmpegVersion = 'não encontrado';
-  try { ffmpegVersion = execSync('ffmpeg -version 2>&1').toString().split('\n')[0]; } catch (_) {}
+  let hasX264 = false;
+  try {
+    ffmpegVersion = execSync('ffmpeg -version 2>&1').toString().split('\n')[0];
+    hasX264 = execSync('ffmpeg -encoders 2>&1').toString().includes('libx264');
+  } catch (_) {}
   res.json({
     ffmpeg: ffmpegVersion,
+    hasX264,
     uploadsDir: UPLOADS_DIR,
     uploadsDirExists: fs.existsSync(UPLOADS_DIR),
     files: fs.existsSync(UPLOADS_DIR) ? fs.readdirSync(UPLOADS_DIR) : [],
@@ -121,14 +126,16 @@ app.post('/transcode/:filename', (req, res) => {
     outputFile,
   ]);
   let log = '';
-  ff.stderr.on('data', d => { if (log.length < 3000) log += d.toString(); });
+  ff.stderr.on('data', d => { log += d.toString(); }); // captura tudo
   ff.on('close', code => {
-    console.log('Transcode código:', code, '| log:', log.slice(0, 500));
+    const tail = log.slice(-1500); // pega o final onde fica o erro real
+    console.log('Transcode código:', code);
+    console.log('TAIL LOG:', tail);
     if (code === 0) {
       conversions[filename] = { status: 'done', output: outputFilename };
       try { fs.unlinkSync(inputFile); } catch (_) {}
     } else {
-      conversions[filename] = { status: 'error', log: log.slice(0, 500) };
+      conversions[filename] = { status: 'error', log: tail };
     }
   });
   res.json({ status: 'converting', output: outputFilename });
