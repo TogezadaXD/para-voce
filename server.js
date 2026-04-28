@@ -28,6 +28,19 @@ const conversions = {};
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Diagnóstico
+app.get('/diag', (req, res) => {
+  const { execSync } = require('child_process');
+  let ffmpegVersion = 'não encontrado';
+  try { ffmpegVersion = execSync('ffmpeg -version 2>&1').toString().split('\n')[0]; } catch (_) {}
+  res.json({
+    ffmpeg: ffmpegVersion,
+    uploadsDir: UPLOADS_DIR,
+    uploadsDirExists: fs.existsSync(UPLOADS_DIR),
+    files: fs.existsSync(UPLOADS_DIR) ? fs.readdirSync(UPLOADS_DIR) : [],
+  });
+});
+
 // Upload
 app.post('/upload', (req, res) => {
   upload.single('video')(req, res, (err) => {
@@ -81,12 +94,16 @@ app.post('/convert/:filename', (req, res) => {
     outputFile,
   ]);
 
+  let ffmpegErr = '';
+  ffmpeg.stderr.on('data', d => { ffmpegErr += d.toString(); });
+
   ffmpeg.on('close', (code) => {
     if (code === 0) {
       conversions[filename] = { status: 'done', output: outputFilename };
       try { fs.unlinkSync(inputFile); } catch (_) {}
     } else {
-      conversions[filename] = { status: 'error' };
+      console.error('FFmpeg error (code', code, '):\n', ffmpegErr.slice(-2000));
+      conversions[filename] = { status: 'error', log: ffmpegErr.slice(-500) };
     }
   });
 
