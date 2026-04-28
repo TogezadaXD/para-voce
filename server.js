@@ -71,45 +71,66 @@ app.get('/videos', (req, res) => {
   }
 });
 
-// Converter MKV → MP4 em background
+// Remux MKV → MP4 (copia streams sem recodificar)
 app.post('/convert/:filename', (req, res) => {
   const filename = path.basename(req.params.filename);
   const inputFile = path.join(UPLOADS_DIR, filename);
-
   if (!fs.existsSync(inputFile)) return res.status(404).json({ error: 'Não encontrado' });
   if (conversions[filename]?.status === 'converting') return res.json({ status: 'converting' });
 
-  const outputFilename = filename.replace(/\.[^.]+$/, '') + '_converted.mp4';
+  const outputFilename = filename.replace(/\.[^.]+$/, '') + '_remux.mp4';
   const outputFile = path.join(UPLOADS_DIR, outputFilename);
-
   conversions[filename] = { status: 'converting', output: outputFilename };
 
-  // Tenta remux (cópia direta, sem recodificar — muito mais rápido)
-  const ffmpeg = spawn('ffmpeg', [
-    '-i', inputFile,
-    '-c', 'copy',
-    '-movflags', '+faststart',
-    '-y',
-    outputFile,
-  ]);
-
-  let ffmpegLog = '';
-  ffmpeg.stderr.on('data', d => {
-    const chunk = d.toString();
-    if (ffmpegLog.length < 3000) ffmpegLog += chunk; // guarda início do log
-  });
-
-  ffmpeg.on('close', (code) => {
-    console.log('FFmpeg saiu com código', code);
-    console.log('Log:', ffmpegLog.slice(0, 1500));
+  const ff = spawn('ffmpeg', ['-i', inputFile, '-c', 'copy', '-movflags', '+faststart', '-y', outputFile]);
+  let log = '';
+  ff.stderr.on('data', d => { if (log.length < 3000) log += d.toString(); });
+  ff.on('close', code => {
     if (code === 0) {
       conversions[filename] = { status: 'done', output: outputFilename };
       try { fs.unlinkSync(inputFile); } catch (_) {}
     } else {
-      conversions[filename] = { status: 'error', log: ffmpegLog.slice(0, 800) };
+      console.error('Remux falhou (código', code, '):', log.slice(0, 1000));
+      conversions[filename] = { status: 'error', log: log.slice(0, 500) };
     }
   });
+  res.json({ status: 'converting', output: outputFilename });
+});
 
+// Transcode para H.264 (compatível com todos os browsers)
+app.post('/transcode/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  const inputFile = path.join(UPLOADS_DIR, filename);
+  if (!fs.existsSync(inputFile)) return res.status(404).json({ error: 'Não encontrado' });
+  if (conversions[filename]?.status === 'converting') return res.json({ status: 'converting' });
+
+  const outputFilename = filename.replace(/\.[^.]+$/, '') + '_h264.mp4';
+  const outputFile = path.join(UPLOADS_DIR, outputFilename);
+  conversions[filename] = { status: 'converting', output: outputFilename };
+
+  // -pix_fmt yuv420p converte 10-bit x265 para 8-bit H.264
+  const ff = spawn('ffmpeg', [
+    '-i', inputFile,
+    '-c:v', 'libx264',
+    '-pix_fmt', 'yuv420p',
+    '-preset', 'fast',
+    '-crf', '22',
+    '-c:a', 'aac',
+    '-movflags', '+faststart',
+    '-y',
+    outputFile,
+  ]);
+  let log = '';
+  ff.stderr.on('data', d => { if (log.length < 3000) log += d.toString(); });
+  ff.on('close', code => {
+    console.log('Transcode código:', code, '| log:', log.slice(0, 500));
+    if (code === 0) {
+      conversions[filename] = { status: 'done', output: outputFilename };
+      try { fs.unlinkSync(inputFile); } catch (_) {}
+    } else {
+      conversions[filename] = { status: 'error', log: log.slice(0, 500) };
+    }
+  });
   res.json({ status: 'converting', output: outputFilename });
 });
 

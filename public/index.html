@@ -362,6 +362,7 @@
       }
       videos.forEach(v => {
         const isMkv = /\.mkv$/i.test(v.filename);
+        const isRemux = /_remux\.mp4$/i.test(v.filename);
         const enc = encodeURIComponent(v.filename);
         const item = document.createElement('div');
         item.className = 'video-item';
@@ -375,8 +376,11 @@
           ${v.converting
             ? `<span class="converting-badge">⚙ CONVERTENDO...</span>`
             : isMkv
-              ? `<button class="btn-convert" onclick="convertVideo('${enc}', this)">⚙ CONVERTER</button>`
-              : `<button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>`
+              ? `<button class="btn-convert" onclick="convertVideo('${enc}', this)">⚙ REMUX</button>`
+              : isRemux
+                ? `<button class="btn-convert" onclick="transcodeVideo('${enc}', this)" title="Converter para H.264 (Chrome/Firefox)">🔄 → H.264</button>
+                   <button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>`
+                : `<button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>`
           }
           <button class="btn-delete" title="Apagar" onclick="deleteVideo('${enc}')">🗑</button>
         `;
@@ -390,6 +394,13 @@
       btn.disabled = true;
       btn.textContent = '⚙ CONVERTENDO...';
       await fetch(`/convert/${filename}`, { method: 'POST' });
+      pollConversion(decodeURIComponent(filename));
+    }
+
+    async function transcodeVideo(filename, btn) {
+      btn.disabled = true;
+      btn.textContent = '⚙ TRANSCODING...';
+      await fetch(`/transcode/${filename}`, { method: 'POST' });
       pollConversion(decodeURIComponent(filename));
     }
 
