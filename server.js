@@ -64,16 +64,6 @@ app.get('/videos', (req, res) => {
   }
 });
 
-// Corrigir faststart em arquivo existente
-app.get('/admin/faststart', async (req, res) => {
-  const filename = req.query.filename;
-  if (!filename) return res.status(400).json({ error: 'filename obrigatório' });
-  const file = path.join(UPLOADS_DIR, path.basename(filename));
-  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Não encontrado' });
-  await applyFaststart(file);
-  res.json({ ok: true });
-});
-
 // Delete vídeo
 app.delete('/videos/:filename', (req, res) => {
   const file = path.join(UPLOADS_DIR, path.basename(req.params.filename));
@@ -119,4 +109,27 @@ app.get('/stream/:filename', (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+  // Aplica faststart em MP4s existentes que ainda não têm moov no início
+  (async () => {
+    try {
+      const files = fs.readdirSync(UPLOADS_DIR).filter(f => /\.mp4$/i.test(f));
+      for (const f of files) {
+        const filePath = path.join(UPLOADS_DIR, f);
+        const buf = Buffer.alloc(8);
+        const fd = fs.openSync(filePath, 'r');
+        fs.readSync(fd, buf, 0, 8, 0);
+        fs.closeSync(fd);
+        const atom = buf.slice(4).toString('ascii');
+        if (atom !== 'ftyp' && atom !== 'moov') {
+          console.log(`Aplicando faststart: ${f}`);
+          await applyFaststart(filePath);
+          console.log(`Faststart concluído: ${f}`);
+        }
+      }
+    } catch (e) {
+      console.error('Erro no faststart de startup:', e.message);
+    }
+  })();
+});
