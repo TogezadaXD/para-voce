@@ -65,8 +65,8 @@ app.get('/videos', (req, res) => {
 });
 
 // Corrigir faststart em arquivo existente
-app.post('/admin/faststart', async (req, res) => {
-  const filename = req.body && req.body.filename;
+app.get('/admin/faststart', async (req, res) => {
+  const filename = req.query.filename;
   if (!filename) return res.status(400).json({ error: 'filename obrigatório' });
   const file = path.join(UPLOADS_DIR, path.basename(filename));
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'Não encontrado' });
