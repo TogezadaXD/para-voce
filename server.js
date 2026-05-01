@@ -24,6 +24,7 @@ const upload = multer({
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
 
 function applyFaststart(filePath) {
   return new Promise((resolve) => {
@@ -64,8 +65,10 @@ app.get('/videos', (req, res) => {
 });
 
 // Corrigir faststart em arquivo existente
-app.post('/admin/faststart/:filename', async (req, res) => {
-  const file = path.join(UPLOADS_DIR, path.basename(req.params.filename));
+app.post('/admin/faststart', async (req, res) => {
+  const filename = req.body && req.body.filename;
+  if (!filename) return res.status(400).json({ error: 'filename obrigatório' });
+  const file = path.join(UPLOADS_DIR, path.basename(filename));
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'Não encontrado' });
   await applyFaststart(file);
   res.json({ ok: true });
