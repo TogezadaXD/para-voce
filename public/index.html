@@ -4,38 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Low Budget Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Special+Elite&display=swap" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Special+Elite&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background-color: #1c1008;
-      background-image:
-        repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 40px),
-        repeating-linear-gradient(0deg, rgba(0,0,0,0.07) 0px, rgba(0,0,0,0.07) 1px, transparent 1px, transparent 40px),
-        linear-gradient(160deg, #2e1a0a 0%, #1c1008 40%, #110b04 100%);
-      color: #f0ddb0;
-      font-family: 'Special Elite', 'Courier New', monospace;
-      min-height: 100vh;
+    :root {
+      --bg: #1a1208;
+      --surface: rgba(10,7,3,0.75);
+      --border: rgba(200,150,62,0.25);
+      --border-hover: rgba(200,150,62,0.6);
+      --accent: #c8963e;
+      --accent-dim: rgba(200,150,62,0.07);
+      --text: #f0ddb0;
+      --text-muted: #8a7050;
+      --text-subtle: #4a3828;
+      --green: #7dba6e;
+      --red: #c0504a;
     }
 
-    /* Film strip top */
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(200,150,62,0.06) 0%, transparent 60%),
+        repeating-linear-gradient(90deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 48px),
+        repeating-linear-gradient(0deg,  rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 48px);
+      color: var(--text);
+      font-family: 'Special Elite', 'Courier New', monospace;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Film strip */
     .filmstrip {
-      height: 36px;
-      background: #0d0d0d;
+      height: 30px;
+      background: #0a0700;
       display: flex;
       align-items: center;
-      gap: 0;
       overflow: hidden;
-      border-bottom: 3px solid #c8963e;
+      border-bottom: 2px solid var(--accent);
     }
-    .filmstrip-hole {
-      width: 22px; height: 18px;
-      background: #1c1008;
+    .fhole {
+      width: 18px; height: 13px;
+      background: var(--bg);
       border-radius: 3px;
       flex-shrink: 0;
-      margin: 0 6px;
+      margin: 0 5px;
     }
 
     /* Header */
@@ -43,231 +57,297 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px 24px 20px;
-      border-bottom: 2px solid #c8963e44;
-      position: relative;
-    }
-    header img.logo {
-      width: 160px;
-      height: 160px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 24px #0008);
-      margin-bottom: 8px;
-    }
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      color: #c8963e;
-      letter-spacing: 0.08em;
-      text-shadow: 2px 2px 0 #0008;
-    }
-    header p.tagline {
-      font-size: 0.8rem;
-      color: #9a7a50;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      margin-top: 4px;
+      padding: 48px 24px 36px;
     }
 
-    main { max-width: 860px; margin: 0 auto; padding: 36px 20px 60px; }
+    .logo-frame {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    /* Golden corner decorations */
+    .logo-frame::before,
+    .logo-frame::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: var(--accent);
+      border-style: solid;
+      opacity: 0.7;
+    }
+    .logo-frame::before {
+      top: -6px; left: -6px;
+      border-width: 2px 0 0 2px;
+    }
+    .logo-frame::after {
+      bottom: -6px; right: -6px;
+      border-width: 0 2px 2px 0;
+    }
+
+    .logo-frame-inner {
+      position: relative;
+    }
+    .logo-frame-inner::before,
+    .logo-frame-inner::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-color: var(--accent);
+      border-style: solid;
+      opacity: 0.7;
+    }
+    .logo-frame-inner::before {
+      top: -6px; right: -6px;
+      border-width: 2px 2px 0 0;
+    }
+    .logo-frame-inner::after {
+      bottom: -6px; left: -6px;
+      border-width: 0 0 2px 2px;
+    }
+
+    .logo-frame img {
+      display: block;
+      width: 340px;
+      height: auto;
+      border: 1px solid rgba(200,150,62,0.2);
+      filter:
+        drop-shadow(0 0 30px rgba(200,150,62,0.12))
+        drop-shadow(0 8px 32px rgba(0,0,0,0.6));
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-shadow: 0 2px 12px rgba(200,150,62,0.25), 1px 1px 0 #0008;
+      margin-bottom: 6px;
+    }
+
+    header p.tagline {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+
+    .header-divider {
+      width: 280px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      margin: 28px auto 0;
+      opacity: 0.4;
+    }
+
+    /* Main content */
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 36px 24px 0;
+    }
 
     /* Upload zone */
     .upload-zone {
-      border: 2px dashed #c8963e88;
-      border-radius: 4px;
-      padding: 44px 32px;
+      border: 1.5px dashed rgba(200,150,62,0.28);
+      border-radius: 3px;
+      padding: 36px 32px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
-      margin-bottom: 40px;
-      background: rgba(200,150,62,0.04);
+      margin-bottom: 36px;
+      background: var(--accent-dim);
       position: relative;
     }
     .upload-zone::before, .upload-zone::after {
       content: '✦';
       position: absolute;
       top: 10px;
-      color: #c8963e66;
-      font-size: 0.9rem;
+      color: rgba(200,150,62,0.35);
+      font-size: 0.8rem;
     }
     .upload-zone::before { left: 14px; }
-    .upload-zone::after { right: 14px; }
+    .upload-zone::after  { right: 14px; }
     .upload-zone:hover, .upload-zone.drag-over {
-      border-color: #c8963e;
-      background: rgba(200,150,62,0.08);
+      border-color: var(--accent);
+      background: rgba(200,150,62,0.1);
     }
     .upload-zone strong {
       display: block;
       font-family: 'Playfair Display', serif;
-      font-size: 1.15rem;
-      color: #f0ddb0;
-      margin-bottom: 8px;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 7px;
     }
-    .upload-zone p { color: #9a7a50; font-size: 0.82rem; letter-spacing: 0.05em; }
+    .upload-zone p { color: var(--text-muted); font-size: 0.76rem; letter-spacing: 0.04em; }
+    .upload-zone span.badge {
+      display: inline-block;
+      margin-top: 11px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(200,150,62,0.22);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      padding: 3px 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
     #file-input { display: none; }
 
     /* Progress */
     .progress-wrap {
       display: none;
-      margin-bottom: 24px;
-      background: #0d0d0d;
-      border: 1px solid #c8963e44;
-      border-radius: 4px;
-      padding: 16px 20px;
+      margin-bottom: 20px;
+      background: rgba(10,7,3,0.6);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 14px 18px;
     }
     .progress-wrap.active { display: block; }
-    .progress-label { font-size: 0.82rem; color: #9a7a50; margin-bottom: 8px; letter-spacing: 0.05em; }
-    .progress-bar-bg { height: 5px; background: #2a1e10; border-radius: 99px; overflow: hidden; }
-    .progress-bar { height: 100%; width: 0%; background: #c8963e; border-radius: 99px; transition: width 0.15s; }
-    .progress-pct { font-size: 0.82rem; color: #c8963e; margin-top: 6px; text-align: right; }
+    .progress-label { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .progress-bar-bg { height: 3px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: var(--accent); border-radius: 99px; transition: width 0.15s; }
+    .progress-pct { font-size: 0.7rem; color: var(--accent); margin-top: 5px; text-align: right; }
 
     /* Status */
-    .status { font-size: 0.88rem; margin-bottom: 24px; min-height: 1.2em; letter-spacing: 0.04em; }
-    .status.ok { color: #7dba6e; }
-    .status.err { color: #c0504a; }
+    .status { font-size: 0.8rem; margin-bottom: 18px; min-height: 1.2em; letter-spacing: 0.04em; text-align: center; }
+    .status.ok  { color: var(--green); }
+    .status.err { color: var(--red); }
 
-    /* Section title */
-    .section-title {
+    /* Section header */
+    .section-header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: 14px;
+      margin-bottom: 16px;
     }
-    .section-title span {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      color: #c8963e;
-      letter-spacing: 0.06em;
-    }
-    .section-title::before, .section-title::after {
+    .section-header::before, .section-header::after {
       content: '';
       flex: 1;
       height: 1px;
-      background: #c8963e44;
+      background: linear-gradient(90deg, transparent, var(--border));
+    }
+    .section-header::after {
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    .count-badge {
+      font-size: 0.65rem;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid var(--border);
+      padding: 1px 8px;
+      letter-spacing: 0.06em;
     }
 
     /* Video list */
-    .video-list { display: flex; flex-direction: column; gap: 10px; }
+    .video-list { display: flex; flex-direction: column; gap: 8px; }
 
     .video-item {
       display: flex;
       align-items: center;
-      gap: 16px;
-      background: rgba(13,10,5,0.7);
-      border: 1px solid #c8963e33;
-      border-left: 3px solid #c8963e;
-      border-radius: 4px;
-      padding: 14px 18px;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      padding: 13px 16px;
       transition: border-color 0.15s, background 0.15s;
+      backdrop-filter: blur(4px);
     }
-    .video-item:hover { border-color: #c8963eaa; background: rgba(200,150,62,0.06); }
+    .video-item:hover {
+      border-color: var(--border-hover);
+      background: rgba(200,150,62,0.05);
+    }
 
-    .video-thumb { font-size: 1.8rem; flex-shrink: 0; }
+    .video-icon { font-size: 1.4rem; flex-shrink: 0; }
 
     .video-info { flex: 1; min-width: 0; }
     .video-name {
       font-family: 'Playfair Display', serif;
-      font-size: 0.95rem;
-      color: #f0ddb0;
+      font-size: 0.88rem;
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .video-meta { font-size: 0.75rem; color: #7a6040; margin-top: 4px; letter-spacing: 0.04em; }
+    .video-meta { font-size: 0.68rem; color: var(--text-subtle); margin-top: 3px; letter-spacing: 0.04em; }
 
     .btn-play {
-      background: #c8963e;
-      color: #0d0d0d;
+      background: var(--accent);
+      color: #0d0a04;
       border: none;
-      border-radius: 3px;
-      padding: 8px 18px;
-      font-size: 0.82rem;
+      padding: 7px 18px;
+      font-size: 0.72rem;
       font-family: 'Special Elite', monospace;
+      font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      transition: background 0.15s;
+      letter-spacing: 0.1em;
+      transition: opacity 0.15s;
     }
-    .btn-play:hover { background: #e0ad55; }
+    .btn-play:hover { opacity: 0.82; }
 
     .btn-delete {
       background: transparent;
-      color: #5a4030;
-      border: 1px solid #3a2a1a;
-      border-radius: 3px;
-      padding: 8px 10px;
-      font-size: 0.85rem;
+      color: var(--text-subtle);
+      border: 1px solid rgba(74,56,40,0.5);
+      padding: 7px 10px;
+      font-size: 0.8rem;
       cursor: pointer;
       flex-shrink: 0;
       transition: color 0.15s, border-color 0.15s;
     }
-    .btn-delete:hover { color: #c0504a; border-color: #c0504a; }
-
-    .btn-convert {
-      background: transparent;
-      color: #c8963e;
-      border: 1px solid #c8963e66;
-      border-radius: 3px;
-      padding: 8px 12px;
-      font-size: 0.78rem;
-      font-family: 'Special Elite', monospace;
-      cursor: pointer;
-      flex-shrink: 0;
-      letter-spacing: 0.06em;
-      transition: background 0.15s;
-    }
-    .btn-convert:hover { background: #c8963e22; }
-    .btn-convert:disabled { opacity: 0.4; cursor: default; }
-
-    .converting-badge {
-      font-size: 0.72rem;
-      color: #c8963e;
-      letter-spacing: 0.08em;
-      animation: pulse 1.2s infinite;
-      flex-shrink: 0;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .btn-delete:hover { color: var(--red); border-color: rgba(192,80,74,0.4); }
 
     .empty {
-      color: #5a4030;
+      color: var(--text-subtle);
       text-align: center;
-      padding: 40px 0;
-      font-size: 0.9rem;
-      letter-spacing: 0.08em;
+      padding: 52px 0;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
     }
 
-    /* Filmstrip bottom */
+    /* Bottom filmstrip */
     .filmstrip-bottom {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      height: 30px;
-      background: #0d0d0d;
+      height: 26px;
+      background: #0a0700;
       display: flex;
       align-items: center;
-      border-top: 3px solid #c8963e;
+      border-top: 2px solid var(--accent);
       overflow: hidden;
     }
   </style>
 </head>
 <body>
 
-  <div class="filmstrip">
-    <script>document.write(Array(60).fill('<div class="filmstrip-hole"></div>').join(''))</script>
-  </div>
+  <div class="filmstrip" id="filmstrip-top"></div>
 
   <header>
-    <img class="logo" src="/logo.png" alt="Low Budget Studio" />
+    <div class="logo-frame">
+      <div class="logo-frame-inner">
+        <img src="/logo.png" alt="Low Budget Studio" />
+      </div>
+    </div>
     <h1>Low Budget Studio</h1>
     <p class="tagline">Sua biblioteca de vídeos</p>
+    <div class="header-divider"></div>
   </header>
 
   <main>
     <div class="upload-zone" id="drop-zone">
-      <strong>Clique ou arraste o vídeo aqui</strong>
-      <p>MP4 · MKV · WebM · MOV · AVI &nbsp;—&nbsp; até 20 GB</p>
-      <input type="file" id="file-input" accept=".mp4,.mkv,.webm,.mov,.avi" />
+      <strong>Clique ou arraste para enviar</strong>
+      <p>Envie vídeos já convertidos para H.264</p>
+      <span class="badge">MP4 · até 20 GB</span>
+      <input type="file" id="file-input" accept=".mp4,.m4v" />
     </div>
 
     <div class="progress-wrap" id="progress-wrap">
@@ -278,23 +358,28 @@
 
     <div class="status" id="status"></div>
 
-    <div class="section-title"><span>Na Biblioteca</span></div>
+    <div class="section-header">
+      <h2>Na Biblioteca</h2>
+      <span class="count-badge" id="count-badge">0</span>
+    </div>
     <div class="video-list" id="video-list"></div>
   </main>
 
-  <div class="filmstrip-bottom">
-    <script>document.write(Array(60).fill('<div class="filmstrip-hole"></div>').join(''))</script>
-  </div>
+  <div class="filmstrip-bottom" id="filmstrip-bottom"></div>
 
   <script>
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const progressWrap = document.getElementById('progress-wrap');
+    document.getElementById('filmstrip-top').innerHTML    = Array(90).fill('<div class="fhole"></div>').join('');
+    document.getElementById('filmstrip-bottom').innerHTML = Array(90).fill('<div class="fhole"></div>').join('');
+
+    const dropZone    = document.getElementById('drop-zone');
+    const fileInput   = document.getElementById('file-input');
+    const progressWrap= document.getElementById('progress-wrap');
     const progressBar = document.getElementById('progress-bar');
     const progressPct = document.getElementById('progress-pct');
-    const progressLabel = document.getElementById('progress-label');
-    const statusEl = document.getElementById('status');
-    const listEl = document.getElementById('video-list');
+    const progressLabel=document.getElementById('progress-label');
+    const statusEl    = document.getElementById('status');
+    const listEl      = document.getElementById('video-list');
+    const countBadge  = document.getElementById('count-badge');
 
     dropZone.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => fileInput.files[0] && uploadFile(fileInput.files[0]));
@@ -315,7 +400,6 @@
       progressPct.textContent = '0%';
       progressLabel.textContent = `Enviando: ${file.name}`;
       setStatus('');
-
       xhr.upload.addEventListener('progress', e => {
         if (!e.lengthComputable) return;
         const pct = Math.round((e.loaded / e.total) * 100);
@@ -356,32 +440,24 @@
       const res = await fetch('/videos');
       const videos = await res.json();
       listEl.innerHTML = '';
+      countBadge.textContent = videos.length;
       if (!videos.length) {
         listEl.innerHTML = '<div class="empty">— Nenhum vídeo na biblioteca ainda —</div>';
         return;
       }
       videos.forEach(v => {
-        const isMkv = /\.mkv$/i.test(v.filename);
-        const isRemux = /_remux\.mp4$/i.test(v.filename);
-        const enc = encodeURIComponent(v.filename);
+        const enc  = encodeURIComponent(v.filename);
+        const name = v.filename.replace(/^\d+-/, '').replace(/\.[^.]+$/, '');
+        const ext  = v.filename.split('.').pop().toUpperCase();
         const item = document.createElement('div');
         item.className = 'video-item';
-        item.dataset.filename = v.filename;
         item.innerHTML = `
-          <div class="video-thumb">📽</div>
+          <div class="video-icon">📽</div>
           <div class="video-info">
-            <div class="video-name">${v.filename.replace(/^\d+-/, '')}</div>
-            <div class="video-meta">${formatSize(v.size)} &nbsp;·&nbsp; ${formatDate(v.date)}${isMkv ? ' &nbsp;·&nbsp; <span style="color:#c8963e">MKV</span>' : ''}</div>
+            <div class="video-name">${name}</div>
+            <div class="video-meta">${ext} &nbsp;·&nbsp; ${formatSize(v.size)} &nbsp;·&nbsp; ${formatDate(v.date)}</div>
           </div>
-          ${v.converting
-            ? `<span class="converting-badge">⚙ CONVERTENDO...</span>`
-            : isMkv
-              ? `<button class="btn-convert" onclick="convertVideo('${enc}', this)">⚙ REMUX</button>`
-              : isRemux
-                ? `<button class="btn-convert" onclick="transcodeVideo('${enc}', this)" title="Converter para H.264 (Chrome/Firefox)">🔄 → H.264</button>
-                   <button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>`
-                : `<button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>`
-          }
+          <button class="btn-play" onclick="watch('${enc}')">▶ ASSISTIR</button>
           <button class="btn-delete" title="Apagar" onclick="deleteVideo('${enc}')">🗑</button>
         `;
         listEl.appendChild(item);
@@ -389,33 +465,6 @@
     }
 
     function watch(filename) { window.location.href = `/player.html?v=${filename}`; }
-
-    async function convertVideo(filename, btn) {
-      btn.disabled = true;
-      btn.textContent = '⚙ CONVERTENDO...';
-      await fetch(`/convert/${filename}`, { method: 'POST' });
-      pollConversion(decodeURIComponent(filename));
-    }
-
-    async function transcodeVideo(filename, btn) {
-      btn.disabled = true;
-      btn.textContent = '⚙ TRANSCODING...';
-      await fetch(`/transcode/${filename}`, { method: 'POST' });
-      pollConversion(decodeURIComponent(filename));
-    }
-
-    function pollConversion(filename) {
-      const enc = encodeURIComponent(filename);
-      const interval = setInterval(async () => {
-        const res = await fetch(`/convert-status/${enc}`);
-        const data = await res.json();
-        if (data.status === 'done' || data.status === 'error') {
-          clearInterval(interval);
-          if (data.status === 'error') setStatus('Erro na conversão.', 'err');
-          loadVideos();
-        }
-      }, 4000);
-    }
 
     async function deleteVideo(filename) {
       if (!confirm('Apagar este vídeo da biblioteca?')) return;

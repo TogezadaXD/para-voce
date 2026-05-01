@@ -4,164 +4,169 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Low Budget Studio — Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Special+Elite&display=swap" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Special+Elite&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg: #0d0905;
+      --surface: #110b04;
+      --border: #c8963e44;
+      --accent: #c8963e;
+      --text: #f0ddb0;
+      --text-muted: #9a7a50;
+    }
+
     body {
-      background: #0d0905;
-      color: #f0ddb0;
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Special Elite', 'Courier New', monospace;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* Top bar */
     .top-bar {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       padding: 10px 20px;
-      background: #0d0d0d;
-      border-bottom: 2px solid #c8963e;
+      background: var(--surface);
+      border-bottom: 3px solid var(--accent);
       flex-shrink: 0;
     }
-    .logo-small { width: 36px; height: 36px; object-fit: contain; }
+
+    .logo-small { width: 32px; height: 32px; object-fit: contain; flex-shrink: 0; }
+
     .back-btn {
       background: none;
-      border: 1px solid #c8963e55;
-      color: #c8963e;
+      border: 1px solid rgba(200,150,62,0.35);
+      color: var(--accent);
       font-family: 'Special Elite', monospace;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       cursor: pointer;
       padding: 5px 12px;
-      border-radius: 3px;
+      border-radius: 2px;
       letter-spacing: 0.1em;
+      transition: background 0.15s;
+      flex-shrink: 0;
     }
-    .back-btn:hover { background: #c8963e22; }
+    .back-btn:hover { background: rgba(200,150,62,0.1); }
+
     .video-title {
       font-family: 'Playfair Display', serif;
-      font-size: 0.95rem;
-      color: #c8963e;
+      font-size: 0.9rem;
+      color: var(--accent);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       flex: 1;
     }
 
-    .filmstrip-bar {
-      height: 20px;
-      background: #0d0d0d;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .fhole {
-      width: 14px; height: 10px;
-      background: #0d0905;
-      border-radius: 2px;
-      flex-shrink: 0;
-      margin: 0 5px;
-    }
-
+    /* Player */
     .player-wrap {
       flex: 1;
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: 24px 16px 48px;
+      padding: 28px 20px 48px;
     }
 
     .player-outer {
       width: 100%;
-      max-width: 1000px;
-      border: 2px solid #c8963e55;
-      border-radius: 4px;
+      max-width: 1060px;
+      border: 2px solid rgba(200,150,62,0.3);
+      border-radius: 3px;
       overflow: hidden;
-      box-shadow: 0 8px 60px #00000088;
+      box-shadow: 0 12px 60px rgba(0,0,0,0.7);
       background: #000;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Vídeo ocupa toda a largura, altura natural — SEM overlay em cima */
     video {
       width: 100%;
       display: block;
       background: #000;
-      max-height: 70vh;
+      max-height: 66vh;
+      flex-shrink: 0;
     }
 
-    /* Aviso de codec */
+    /* Fullscreen — video fills entire screen */
+    .player-outer:fullscreen,
+    .player-outer:-webkit-full-screen {
+      max-width: 100%;
+      border: none;
+      border-radius: 0;
+    }
+    .player-outer:fullscreen video,
+    .player-outer:-webkit-full-screen video {
+      max-height: calc(100vh - 58px);
+    }
+
     .codec-warn {
       display: none;
-      background: #3a1a0a;
-      border-top: 1px solid #c8963e55;
+      background: rgba(192,80,74,0.1);
+      border-top: 1px solid rgba(192,80,74,0.25);
       padding: 10px 18px;
-      font-size: 0.82rem;
-      color: #f0a060;
+      font-size: 0.78rem;
+      color: #e07070;
       letter-spacing: 0.03em;
     }
     .codec-warn.show { display: block; }
 
-    /* Controles ficam ABAIXO do vídeo — sem interferir na renderização */
+    /* Controls */
     .controls {
-      background: #0d0d0d;
-      border-top: 2px solid #c8963e;
+      background: var(--surface);
+      border-top: 2px solid var(--accent);
       padding: 10px 16px 12px;
+      flex-shrink: 0;
     }
 
-    /* Seek bar */
     .seek-wrap {
       position: relative;
-      height: 5px;
+      height: 4px;
       background: #2a1e10;
       border-radius: 99px;
       cursor: pointer;
       margin-bottom: 10px;
+      transition: height 0.12s;
     }
-    .seek-wrap:hover { height: 7px; }
-    .seek-buffered {
-      position: absolute; top: 0; left: 0;
-      height: 100%;
-      background: #ffffff22;
-      border-radius: 99px;
-      pointer-events: none;
-    }
-    .seek-fill {
-      position: absolute; top: 0; left: 0;
-      height: 100%;
-      background: #c8963e;
-      border-radius: 99px;
-      pointer-events: none;
-    }
+    .seek-wrap:hover { height: 6px; }
 
-    .ctrl-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .seek-buffered, .seek-fill {
+      position: absolute; top: 0; left: 0;
+      height: 100%;
+      border-radius: 99px;
+      pointer-events: none;
     }
+    .seek-buffered { background: rgba(255,255,255,0.1); }
+    .seek-fill { background: var(--accent); }
+
+    .ctrl-row { display: flex; align-items: center; gap: 4px; }
 
     .ctrl-btn {
       background: none;
       border: none;
-      color: #f0ddb0;
-      font-size: 1.2rem;
+      color: var(--text-muted);
+      font-size: 1.1rem;
       cursor: pointer;
       padding: 4px 6px;
-      border-radius: 4px;
+      border-radius: 3px;
       line-height: 1;
       flex-shrink: 0;
-      transition: color 0.1s, transform 0.1s;
+      transition: color 0.1s, background 0.1s;
     }
-    .ctrl-btn:hover { color: #c8963e; transform: scale(1.15); }
-    .ctrl-btn:active { transform: scale(0.9); }
+    .ctrl-btn:hover { color: var(--text); background: rgba(200,150,62,0.1); }
 
     .time-display {
-      font-size: 0.78rem;
-      color: #c8a060;
+      font-size: 0.72rem;
+      color: var(--text-muted);
       white-space: nowrap;
       letter-spacing: 0.05em;
+      margin-left: 4px;
     }
 
     .spacer { flex: 1; }
@@ -169,18 +174,18 @@
     input[type=range].vol-range {
       -webkit-appearance: none;
       appearance: none;
-      width: 80px;
-      height: 4px;
-      background: #3a2a10;
+      width: 72px;
+      height: 3px;
+      background: #2a1e10;
       border-radius: 99px;
       cursor: pointer;
       outline: none;
     }
     input[type=range].vol-range::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 13px; height: 13px;
+      width: 12px; height: 12px;
       border-radius: 50%;
-      background: #c8963e;
+      background: var(--accent);
       cursor: pointer;
     }
   </style>
@@ -193,18 +198,12 @@
     <span class="video-title" id="video-title">Carregando...</span>
   </div>
 
-  <div class="filmstrip-bar">
-    <script>document.write(Array(80).fill('<div class="fhole"></div>').join(''))</script>
-  </div>
-
   <div class="player-wrap">
     <div class="player-outer">
-
       <video id="video" preload="auto" playsinline></video>
 
       <div class="codec-warn" id="codec-warn">
-        ⚠ Este vídeo não pode ser exibido — o codec pode não ser suportado pelo navegador.
-        Converta para <strong>MP4 (H.264)</strong> e envie novamente.
+        ⚠ Este vídeo não pode ser exibido. Certifique-se de que o arquivo está em MP4 com codec H.264.
       </div>
 
       <div class="controls">
@@ -214,16 +213,15 @@
         </div>
         <div class="ctrl-row">
           <button class="ctrl-btn" id="play-btn" title="Play/Pause [Espaço]">▶</button>
-          <button class="ctrl-btn" id="vol-down" title="Volume − [↓]">🔉</button>
+          <button class="ctrl-btn" id="vol-down" title="Volume −">🔉</button>
           <input type="range" class="vol-range" id="vol-range" min="0" max="100" value="100" />
-          <button class="ctrl-btn" id="vol-up" title="Volume + [↑]">🔊</button>
+          <button class="ctrl-btn" id="vol-up" title="Volume +">🔊</button>
           <button class="ctrl-btn" id="mute-btn" title="Mudo [M]">🔊</button>
           <span class="time-display" id="time-display">0:00 / 0:00</span>
           <div class="spacer"></div>
           <button class="ctrl-btn" id="fs-btn" title="Tela cheia [F]">⛶</button>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -234,46 +232,38 @@
     if (!filename) {
       document.getElementById('video-title').textContent = 'Vídeo não especificado';
     } else {
-      const displayName = decodeURIComponent(filename).replace(/^\d+-/, '');
+      const displayName = decodeURIComponent(filename).replace(/^\d+-/, '').replace(/\.[^.]+$/, '');
       document.title = `${displayName} — Low Budget Studio`;
       document.getElementById('video-title').textContent = displayName;
 
-      const video    = document.getElementById('video');
-      const playBtn  = document.getElementById('play-btn');
-      const volDown  = document.getElementById('vol-down');
-      const volUp    = document.getElementById('vol-up');
-      const volRange = document.getElementById('vol-range');
-      const muteBtn  = document.getElementById('mute-btn');
-      const timeEl   = document.getElementById('time-display');
-      const seekFill = document.getElementById('seek-fill');
-      const seekBuf  = document.getElementById('seek-buffered');
-      const seekWrap = document.getElementById('seek-wrap');
-      const fsBtn    = document.getElementById('fs-btn');
-      const codecWarn= document.getElementById('codec-warn');
+      const video     = document.getElementById('video');
+      const playBtn   = document.getElementById('play-btn');
+      const volDown   = document.getElementById('vol-down');
+      const volUp     = document.getElementById('vol-up');
+      const volRange  = document.getElementById('vol-range');
+      const muteBtn   = document.getElementById('mute-btn');
+      const timeEl    = document.getElementById('time-display');
+      const seekFill  = document.getElementById('seek-fill');
+      const seekBuf   = document.getElementById('seek-buffered');
+      const seekWrap  = document.getElementById('seek-wrap');
+      const fsBtn     = document.getElementById('fs-btn');
+      const codecWarn = document.getElementById('codec-warn');
+      const playerOuter = document.querySelector('.player-outer');
 
       video.src = `/stream/${filename}`;
       video.load();
 
-      // Detecção de codec sem suporte
       video.addEventListener('error', () => codecWarn.classList.add('show'));
-
-      // Detecta se vídeo está a tocar mas sem frames (codec de vídeo sem suporte)
       video.addEventListener('playing', () => {
-        setTimeout(() => {
-          if (video.videoWidth === 0) codecWarn.classList.add('show');
-        }, 800);
+        setTimeout(() => { if (video.videoWidth === 0) codecWarn.classList.add('show'); }, 800);
       });
 
-      // Play / Pause
-      function togglePlay() {
-        if (video.paused) video.play(); else video.pause();
-      }
+      function togglePlay() { video.paused ? video.play() : video.pause(); }
       video.addEventListener('play',  () => playBtn.textContent = '⏸');
       video.addEventListener('pause', () => playBtn.textContent = '▶');
       playBtn.addEventListener('click', togglePlay);
       video.addEventListener('click', togglePlay);
 
-      // Volume
       function setVolume(val) {
         val = Math.max(0, Math.min(100, Math.round(val)));
         video.volume = val / 100;
@@ -289,7 +279,6 @@
         muteBtn.textContent = video.muted ? '🔇' : '🔊';
       });
 
-      // Progress
       function fmt(s) {
         s = Math.floor(s || 0);
         const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -307,7 +296,6 @@
         seekBuf.style.width = (video.buffered.end(video.buffered.length - 1) / video.duration * 100) + '%';
       });
 
-      // Seek
       let dragging = false;
       function seekTo(e) {
         const rect = seekWrap.getBoundingClientRect();
@@ -317,8 +305,6 @@
       document.addEventListener('mousemove', e => { if (dragging) seekTo(e); });
       document.addEventListener('mouseup', () => dragging = false);
 
-      // Fullscreen — tela cheia no player inteiro
-      const playerOuter = document.querySelector('.player-outer');
       fsBtn.addEventListener('click', () => {
         document.fullscreenElement ? document.exitFullscreen() : playerOuter.requestFullscreen();
       });
@@ -326,7 +312,6 @@
         fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
       });
 
-      // Keyboard
       document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
         switch (e.key) {
